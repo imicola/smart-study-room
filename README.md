@@ -40,7 +40,34 @@
 
 ## 快速开始
 
-### 1. 初始化数据库（PostgreSQL 用户级集群）
+> 两种方式任选：**方式一** 用 Docker 一键启动数据库与后端（推荐，起库即用）；**方式二** 纯本地运行，便于本地调试前后端代码。
+
+### 方式一：Docker 启动（数据库 + 后端，推荐）
+
+前置条件：已安装并启动 [Docker Desktop](https://www.docker.com/products/docker-desktop/)（Windows 下无需 WSL）。
+
+```bash
+docker compose up -d --build     # 构建并启动（首次需拉取基础镜像，耗时较长）
+docker compose ps                # 查看状态：db 应 healthy，backend 应 running
+docker compose logs -f backend   # 跟踪后端日志
+```
+
+- **后端 API**：http://localhost:8080（若本机 8080 已被其它服务占用，可在根目录 `.env` 设 `STUDYROOM_HOST_PORT=8081` 后重新 `docker compose up -d`，并将 `frontend/vite.config.js` 代理目标改为对应端口）
+- **数据库**：宿主机 `localhost:5433`（容器内 5432），避免与本机既有 PostgreSQL（5432）端口冲突
+- **数据迁移与初始化**：数据库容器**首次启动**时自动按序执行 `backend/migrations/001_init.sql`（建表/约束/索引）与 `backend/seed/seed.sql`（演示种子数据），无需手动执行迁移脚本
+- **数据持久化与重置**：数据保存在 Docker 卷 `db-data` 中，`down` 不会丢失；需要重建数据库时执行：
+
+```bash
+docker compose down -v    # 删除数据卷
+docker compose up -d      # 下次启动将重新执行迁移与种子数据
+```
+
+- 停止服务（保留数据）：`docker compose down`
+- 本地前端联调：`cd frontend && npm install && npm run dev`，Vite 已将 `/api` 代理到 `http://127.0.0.1:8080`，可直接对接容器内后端
+
+### 方式二：纯本地运行（开发调试用）
+
+#### 1. 初始化数据库（PostgreSQL 用户级集群）
 
 ```bash
 ./scripts/db_init.sh     # 首次：初始化集群并创建 studyroom 库
@@ -49,14 +76,14 @@
 ./scripts/apply_seed.sh  # 演示种子数据（含 14 天历史预约）
 ```
 
-### 2. 启动后端
+#### 2. 启动后端
 
 ```bash
 cd backend
 go run ./cmd/server    # 默认监听 :8080
 ```
 
-### 3. 启动前端
+#### 3. 启动前端
 
 ```bash
 cd frontend

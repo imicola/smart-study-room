@@ -1,0 +1,15 @@
+# 排除 VCS 与 IDE 文件
+.git
+.gitignore
+.vscode
+.idea
+
+# 排除构建产物与运行日志（避免污染构建上下文）
+*.exe
+*.log
+bin/
+out/
+
+# 数据库迁移/种子由 compose 直接挂载，无需进入后端构建上下文
+migrations/
+seed/

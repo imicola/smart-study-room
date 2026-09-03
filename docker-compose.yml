@@ -1,0 +1,64 @@
+# ============================================================
+# 智能共享自习室预约系统 — 后端 + 数据库 Docker 编排
+#
+# 用法:
+#   docker compose up -d --build     # 首次构建并启动
+#   docker compose logs -f backend   # 查看后端日志
+#   docker compose ps                # 查看健康状态
+#   docker compose down              # 停止(保留数据卷)
+#   docker compose down -v           # 停止并删除数据卷(下次启动重新初始化)
+#
+# 数据库首次启动时，postgres 镜像会自动按序执行
+# /docker-entrypoint-initdb.d/ 下的 SQL(仅在数据卷为空时)：
+#   001_init.sql  → 建表/约束/索引(schema 迁移)
+#   002_seed.sql  → 演示种子数据(admin/admin123, stu01..stu40/123456)
+# 重置数据库: docker compose down -v && docker compose up -d
+# ============================================================
+name: smart-study-room
+
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: studyroom-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-studyroom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-studyroom}
+      POSTGRES_DB: ${POSTGRES_DB:-studyroom}
+    ports:
+      # 宿主 5433 → 容器 5432，避免与本机既有 PostgreSQL(5432) 冲突
+      - "5433:5432"
+    volumes:
+      # PG18 镜像约定: 卷挂载至 /var/lib/postgresql(数据自动落入其版本子目录)
+      - db-data:/var/lib/postgresql
+      # 只读挂载 schema 迁移与种子数据，按文件名序执行(001 → 002)
+      - ./backend/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - ./backend/seed/seed.sql:/docker-entrypoint-initdb.d/002_seed.sql:ro
+    healthcheck:
+      # $$ 转义: 由容器内环境变量展开，避免 compose 提前插值
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: studyroom-backend
+    environment:
+      STUDYROOM_PORT: "8080"
+      STUDYROOM_DB_URL: postgres://${POSTGRES_USER:-studyroom}:${POSTGRES_PASSWORD:-studyroom}@db:5432/${POSTGRES_DB:-studyroom}?sslmode=disable
+      STUDYROOM_JWT_SECRET: ${STUDYROOM_JWT_SECRET:-studyroom-dev-secret}
+    ports:
+      # 与前端 Vite 本地代理 http://127.0.0.1:8080 衔接；
+      # 若宿主 8080 被其它服务占用，可设 STUDYROOM_HOST_PORT 覆盖(如 8081)
+      - "${STUDYROOM_HOST_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db-data:
