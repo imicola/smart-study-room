@@ -105,11 +105,7 @@ async function confirmBooking() {
 
 // ---- 智能分配 ----
 const allocVisible = ref(false)
-<<<<<<< HEAD
-const allocForm = ref({ zone: '', has_power: false, near_window: false, need_power: false, need_window: false })
-=======
 const allocForm = ref({ zone: '', need_power: false, need_window: false })
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 const recommendations = ref([])
 const allocLoading = ref(false)
 
@@ -138,10 +134,6 @@ async function runAllocate(autoBook = false) {
       if (!recommendations.value.length) ElMessage.info('没有满足条件的推荐')
     }
   } catch (e) {
-<<<<<<< HEAD
-    // 404 无空位 → 引导候补
-=======
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
     if (String(e.message).includes('没有满足条件')) {
       try {
         await ElMessageBox.confirm('当前时段已满座，是否加入候补队列？', '满座提示', { type: 'info' })
@@ -167,8 +159,6 @@ async function pickRecommended(rec) {
   loadSeatMap()
 }
 
-<<<<<<< HEAD
-=======
 // 统计右栏实时数据
 const seatStats = computed(() => {
   const total = seats.value.length
@@ -181,72 +171,10 @@ const seatStats = computed(() => {
   return { total, free: total - occ - down, occ, down }
 })
 
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 onMounted(loadRooms)
 </script>
 
 <template>
-<<<<<<< HEAD
-  <div class="page-card">
-    <h2 style="margin-top: 0">座位预约</h2>
-
-    <!-- 条件选择 -->
-    <div class="filters">
-      <span class="filter-label">自习室</span>
-      <el-select v-model="roomId" style="width: 200px" @change="loadSeatMap">
-        <el-option v-for="r in rooms" :key="r.id" :label="r.name" :value="r.id" />
-      </el-select>
-
-      <span class="filter-label">日期</span>
-      <el-date-picker v-model="date" type="date" value-format="YYYY-MM-DD"
-        :disabled-date="(d) => d.getTime() < Date.now() - 86400000" style="width: 150px" @change="loadSeatMap" />
-
-      <span class="filter-label">开始</span>
-      <el-select v-model="start" style="width: 100px" @change="loadSeatMap">
-        <el-option v-for="t in timeOptions" :key="t" :label="t" :value="t" />
-      </el-select>
-      <span class="filter-label">结束</span>
-      <el-select v-model="end" style="width: 100px" @change="loadSeatMap">
-        <el-option v-for="t in timeOptions" :key="t" :label="t" :value="t" />
-      </el-select>
-
-      <el-button type="primary" plain @click="openAlloc">✨ 智能分配</el-button>
-    </div>
-
-    <div v-if="room" class="room-info">
-      {{ room.name }} · {{ room.location }} · 开放 {{ room.open_time.slice(0, 5) }}-{{
-        room.close_time.slice(0, 5)
-      }}
-      <el-tag size="small" type="info">绿=空闲</el-tag>
-      <el-tag size="small" type="danger">红=占用</el-tag>
-      <el-tag size="small" type="warning">橙=维护</el-tag>
-    </div>
-
-    <!-- 座位平面图 -->
-    <div v-loading="loading" class="seat-grid-wrap">
-      <div :style="gridStyle">
-        <el-tooltip v-for="s in seats" :key="s.id" :content="seatTip(s)" placement="top">
-          <div :class="seatClass(s)" @click="onSeatClick(s)">
-            {{ s.seat_no }}
-          </div>
-        </el-tooltip>
-      </div>
-    </div>
-
-    <!-- 已选座位操作 -->
-    <div v-if="selected" class="selected-bar">
-      已选 <b>{{ selected.seat_no }}</b>（{{ zoneName[selected.zone] }}{{ selected.has_power ? ' · 电源' : ''
-      }}{{ selected.near_window ? ' · 靠窗' : '' }}）
-      <el-button type="primary" @click="confirmBooking">提交预约</el-button>
-    </div>
-  </div>
-
-  <!-- 智能分配对话框 -->
-  <el-dialog v-model="allocVisible" title="智能自动分配" width="560px">
-    <el-form label-width="90px">
-      <el-form-item label="区域偏好">
-        <el-select v-model="allocForm.zone" placeholder="不限" clearable style="width: 160px">
-=======
   <!-- 座位预约：页面级双栏 = 左筛选 | 右座位图 -->
   <div class="split booking-split">
     <!-- 左栏：筛选 + 智能分配 + 统计 + 图例 -->
@@ -378,36 +306,11 @@ onMounted(loadRooms)
       <div class="filter-row">
         <label>偏好区域</label>
         <el-select v-model="allocForm.zone" placeholder="不限（推荐）" clearable>
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
           <el-option label="静音区" value="quiet" />
           <el-option label="普通区" value="regular" />
           <el-option label="研讨区" value="discussion" />
           <el-option label="机房区" value="computer" />
         </el-select>
-<<<<<<< HEAD
-      </el-form-item>
-      <el-form-item label="需要电源">
-        <el-switch v-model="allocForm.need_power" />
-      </el-form-item>
-      <el-form-item label="需要靠窗">
-        <el-switch v-model="allocForm.need_window" />
-      </el-form-item>
-      <el-form-item>
-        <el-button :loading="allocLoading" @click="runAllocate(false)">获取推荐</el-button>
-        <el-button type="primary" :loading="allocLoading" @click="runAllocate(true)">一键分配最优座位</el-button>
-      </el-form-item>
-    </el-form>
-
-    <div v-if="recommendations.length">
-      <el-divider content-position="left">推荐结果（按匹配度排序）</el-divider>
-      <div v-for="(rec, i) in recommendations" :key="rec.seat.id" class="rec-item">
-        <b>#{{ i + 1 }} {{ rec.seat.seat_no }}</b>
-        <el-tag size="small" type="success">评分 {{ rec.score.toFixed(1) }}</el-tag>
-        <span class="rec-reasons">{{ rec.reasons.join('；') }}</span>
-        <el-button size="small" type="primary" plain @click="pickRecommended(rec)">选它</el-button>
-      </div>
-    </div>
-=======
       </div>
       <div class="pref-checks">
         <el-checkbox v-model="allocForm.need_power">需要电源插座</el-checkbox>
@@ -440,92 +343,10 @@ onMounted(loadRooms)
         </el-button>
       </div>
     </template>
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
   </el-dialog>
 </template>
 
 <style scoped>
-<<<<<<< HEAD
-.filters {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.filter-label {
-  color: #606266;
-  font-size: 14px;
-}
-.room-info {
-  margin: 14px 0 10px;
-  color: #606266;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.seat-grid-wrap {
-  max-height: 480px;
-  overflow: auto;
-  padding: 12px;
-  background: #fafbfc;
-  border: 1px dashed #dcdfe6;
-  border-radius: 6px;
-}
-.seat {
-  height: 40px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  cursor: pointer;
-  user-select: none;
-  border: 1px solid transparent;
-  transition: transform 0.1s;
-}
-.seat:hover {
-  transform: scale(1.06);
-}
-.seat-free {
-  background: #f0f9eb;
-  color: #67c23a;
-  border-color: #c2e7b0;
-}
-.seat-occupied {
-  background: #fef0f0;
-  color: #f56c6c;
-  border-color: #fbc4c4;
-  cursor: not-allowed;
-}
-.seat-disabled {
-  background: #fdf6ec;
-  color: #e6a23c;
-  border-color: #f5dab1;
-  cursor: not-allowed;
-}
-.seat-selected {
-  background: #409eff;
-  color: #fff;
-  border-color: #409eff;
-}
-.selected-bar {
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.rec-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border-bottom: 1px solid #f0f0f0;
-}
-.rec-reasons {
-  color: #909399;
-  font-size: 12px;
-  flex: 1;
-=======
 .booking-split {
   grid-template-columns: 320px 1fr;
   align-items: start;
@@ -726,6 +547,5 @@ onMounted(loadRooms)
 .rec-score {
   margin-top: 2px;
   font-size: 12px;
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }
 </style>

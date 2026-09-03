@@ -1,12 +1,8 @@
-<<<<<<< HEAD
-/* 全局基础样式 */
-=======
 /* ============================================================
    全局基础样式 + 双栏布局 tokens（全站复用）
    色彩风格：低饱和雾霾蓝灰（与登录页同色系呼应）
    ============================================================ */
 
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 * {
   box-sizing: border-box;
 }
@@ -19,17 +15,6 @@ body,
   padding: 0;
   font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei',
     Arial, sans-serif;
-<<<<<<< HEAD
-  background: #f5f7fa;
-  color: #303133;
-}
-
-.page-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-=======
   /* 全局画布：与登录页同色系的极浅蓝灰 */
   background: #f2f4f8;
   color: #2b3240;
@@ -153,5 +138,4 @@ body,
   .split {
     grid-template-columns: 1fr;
   }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }

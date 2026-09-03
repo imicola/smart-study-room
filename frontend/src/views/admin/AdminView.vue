@@ -1,17 +1,10 @@
 <script setup>
-<<<<<<< HEAD
-import { ref, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getRooms, getSeatMap } from '../../api/room'
-import { createRoom, updateRoom, deleteRoom, batchGenSeats, updateSeat, listUsers, setUserStatus } from '../../api/admin'
-=======
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getRooms, getSeatMap } from '../../api/room'
 import {
   createRoom, updateRoom, deleteRoom, batchGenSeats, updateSeat, listUsers, setUserStatus
 } from '../../api/admin'
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 
 const activeTab = ref('rooms')
 
@@ -34,10 +27,6 @@ function openCreate() {
   roomForm.value = { name: '', location: '', open_time: '08:00', close_time: '22:00', seat_rows: 6, seat_cols: 8, description: '' }
   roomDialog.value = true
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 function openEdit(r) {
   editingId.value = r.id
   roomForm.value = {
@@ -47,39 +36,21 @@ function openEdit(r) {
   }
   roomDialog.value = true
 }
-<<<<<<< HEAD
-
-async function saveRoom() {
-  const f = roomForm.value
-  if (editingId.value) {
-    await updateRoom(editingId.value, f)
-    ElMessage.success('房间已更新')
-  } else {
-=======
 async function saveRoom() {
   const f = roomForm.value
   if (!f.name?.trim()) { ElMessage.warning('请输入自习室名称'); return }
   if (editingId.value) { await updateRoom(editingId.value, f); ElMessage.success('房间已更新') }
   else {
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
     const resp = await createRoom(f)
     ElMessage.success(`房间已创建（ID=${resp.data.id}），可批量生成座位`)
   }
   roomDialog.value = false
   loadRooms()
 }
-<<<<<<< HEAD
-
-async function onBatchGen(r) {
-  try {
-    await ElMessageBox.prompt(
-      `按行列批量生成 ${r.name} 的座位（将覆盖房间默认规模）`,
-=======
 async function onBatchGen(r) {
   try {
     await ElMessageBox.prompt(
       `按行列批量生成 ${r.name} 的座位（追加新座位，不覆盖现有）`,
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
       '批量生成座位',
       {
         inputValue: `${r.seat_rows} ${r.seat_cols}`,
@@ -94,19 +65,11 @@ async function onBatchGen(r) {
     })
   } catch { /* 取消 */ }
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 async function onDeleteRoom(r) {
   try {
     await ElMessageBox.confirm(
       `删除房间「${r.name}」将级联删除其全部座位与预约记录，确认？`,
-<<<<<<< HEAD
-      '危险操作', { type: 'error', confirmButtonText: '确认删除' }
-=======
       '危险操作', { type: 'warning', confirmButtonText: '确认删除' }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
     )
   } catch { return }
   await deleteRoom(r.id)
@@ -118,25 +81,14 @@ async function onDeleteRoom(r) {
 const seatDialog = ref(false)
 const seatRoom = ref(null)
 const seatList = ref([])
-<<<<<<< HEAD
-const seatDate = ref(new Date().toISOString().slice(0, 10))
-=======
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 
 async function openSeats(r) {
   seatRoom.value = r
   seatDialog.value = true
-<<<<<<< HEAD
-  const resp = await getSeatMap(r.id, seatDate.value, '08:00', '22:00')
-  seatList.value = resp.data.seats || []
-}
-
-=======
   const today = new Date().toISOString().slice(0, 10)
   const resp = await getSeatMap(r.id, today, '08:00', '22:00')
   seatList.value = resp.data.seats || []
 }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 async function toggleSeatStatus(s) {
   const next = s.status === 'available' ? 'maintenance' : 'available'
   await updateSeat(s.id, { zone: s.zone, has_power: s.has_power, near_window: s.near_window, status: next })
@@ -146,18 +98,10 @@ async function toggleSeatStatus(s) {
 
 // ---------- 用户管理 ----------
 const users = ref([])
-<<<<<<< HEAD
-
-=======
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 async function loadUsers() {
   const resp = await listUsers()
   users.value = resp.data || []
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 async function toggleUser(u) {
   const next = u.status === 'active' ? 'disabled' : 'active'
   await setUserStatus(u.id, next)
@@ -165,64 +109,6 @@ async function toggleUser(u) {
   ElMessage.success(`${u.username} 已${next === 'active' ? '启用' : '禁用'}`)
 }
 
-<<<<<<< HEAD
-onMounted(() => {
-  loadRooms()
-  loadUsers()
-})
-</script>
-
-<template>
-  <div class="page-card">
-    <h2 style="margin-top: 0">管理端</h2>
-
-    <el-tabs v-model="activeTab">
-      <!-- 房间管理 -->
-      <el-tab-pane label="自习室管理" name="rooms">
-        <div style="margin-bottom: 12px">
-          <el-button type="primary" @click="openCreate">新建自习室</el-button>
-        </div>
-        <el-table :data="rooms" stripe>
-          <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="name" label="名称" min-width="130" />
-          <el-table-column prop="location" label="位置" min-width="120" />
-          <el-table-column label="开放时间" width="130">
-            <template #default="{ row }">
-              {{ row.open_time.slice(0, 5) }} - {{ row.close_time.slice(0, 5) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="规模" width="90">
-            <template #default="{ row }">{{ row.seat_rows }} × {{ row.seat_cols }}</template>
-          </el-table-column>
-          <el-table-column label="操作" min-width="300">
-            <template #default="{ row }">
-              <el-button size="small" @click="openEdit(row)">编辑</el-button>
-              <el-button size="small" type="success" plain @click="onBatchGen(row)">批量生成座位</el-button>
-              <el-button size="small" @click="openSeats(row)">座位维护</el-button>
-              <el-button size="small" type="danger" plain @click="onDeleteRoom(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-tab-pane>
-
-      <!-- 用户管理 -->
-      <el-tab-pane label="用户管理" name="users">
-        <el-table :data="users" stripe>
-          <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="username" label="用户名" width="110" />
-          <el-table-column prop="real_name" label="姓名" width="100" />
-          <el-table-column prop="student_no" label="学号" width="110" />
-          <el-table-column label="角色" width="90">
-            <template #default="{ row }">
-              <el-tag size="small" :type="row.role === 'admin' ? 'danger' : 'primary'">
-                {{ row.role === 'admin' ? '管理员' : '学生' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="信用分" width="90">
-            <template #default="{ row }">
-              <span :style="{ color: row.credit_score < 60 ? '#f56c6c' : row.credit_score < 80 ? '#e6a23c' : '#67c23a', fontWeight: 600 }">
-=======
 // ---------- 左栏统计 ----------
 const userStats = ref({ total: 0, active: 0, disabled: 0, admin: 0, student: 0 })
 function refreshStats() {
@@ -378,27 +264,10 @@ function creditColor(s) {
           <el-table-column label="信用分" width="96" align="center">
             <template #default="{ row }">
               <span class="credit-chip" :style="{ color: creditColor(row.credit_score) }">
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
                 {{ row.credit_score }}
               </span>
             </template>
           </el-table-column>
-<<<<<<< HEAD
-          <el-table-column label="状态" width="80">
-            <template #default="{ row }">
-              <el-tag size="small" :type="row.status === 'active' ? 'success' : 'info'">
-                {{ row.status === 'active' ? '正常' : '禁用' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="100">
-            <template #default="{ row }">
-              <el-button
-                size="small"
-                :type="row.status === 'active' ? 'danger' : 'success'"
-                plain
-                :disabled="row.role === 'admin'"
-=======
           <el-table-column label="状态" width="96" align="center">
             <template #default="{ row }">
               <span class="tag-pill" :class="statusCls[row.status]">
@@ -412,75 +281,10 @@ function creditColor(s) {
                 v-if="row.role !== 'admin'"
                 size="small"
                 :class="row.status === 'active' ? 'btn-soft btn-soft-danger' : 'btn-soft btn-soft-success'"
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
                 @click="toggleUser(row)"
               >
                 {{ row.status === 'active' ? '禁用' : '启用' }}
               </el-button>
-<<<<<<< HEAD
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-tab-pane>
-    </el-tabs>
-  </div>
-
-  <!-- 房间编辑对话框 -->
-  <el-dialog v-model="roomDialog" :title="editingId ? '编辑自习室' : '新建自习室'" width="480px">
-    <el-form :model="roomForm" label-width="90px">
-      <el-form-item label="名称" required>
-        <el-input v-model="roomForm.name" placeholder="如 1F-静音自习室" />
-      </el-form-item>
-      <el-form-item label="位置">
-        <el-input v-model="roomForm.location" />
-      </el-form-item>
-      <el-form-item label="开放时间">
-        <el-time-select v-model="roomForm.open_time" start="05:00" step="00:30" end="12:00" style="width: 120px" />
-        <span style="margin: 0 6px">至</span>
-        <el-time-select v-model="roomForm.close_time" start="12:00" step="00:30" end="23:30" style="width: 120px" />
-      </el-form-item>
-      <el-form-item label="默认规模">
-        <el-input-number v-model="roomForm.seat_rows" :min="1" :max="30" /> 行
-        <el-input-number v-model="roomForm.seat_cols" :min="1" :max="30" style="margin-left: 8px" /> 列
-      </el-form-item>
-      <el-form-item label="说明">
-        <el-input v-model="roomForm.description" type="textarea" :rows="2" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="roomDialog = false">取消</el-button>
-      <el-button type="primary" @click="saveRoom">保存</el-button>
-    </template>
-  </el-dialog>
-
-  <!-- 座位维护对话框 -->
-  <el-dialog v-model="seatDialog" :title="`座位维护 - ${seatRoom?.name || ''}`" width="720px">
-    <el-alert type="info" :closable="false" style="margin-bottom: 10px"
-      title="点击「维护/恢复」切换座位状态；维护中的座位不可被预约。" />
-    <el-table :data="seatList" stripe max-height="480">
-      <el-table-column prop="seat_no" label="座位号" width="80" />
-      <el-table-column label="坐标" width="80">
-        <template #default="{ row }">{{ row.row_no }},{{ row.col_no }}</template>
-      </el-table-column>
-      <el-table-column prop="zone" label="区域" width="90" />
-      <el-table-column label="电源" width="60">
-        <template #default="{ row }">{{ row.has_power ? '✔' : '—' }}</template>
-      </el-table-column>
-      <el-table-column label="靠窗" width="60">
-        <template #default="{ row }">{{ row.near_window ? '✔' : '—' }}</template>
-      </el-table-column>
-      <el-table-column label="状态" width="80">
-        <template #default="{ row }">
-          <el-tag size="small" :type="row.status === 'available' ? 'success' : 'warning'">
-            {{ row.status === 'available' ? '可用' : '维护' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="100">
-        <template #default="{ row }">
-          <el-button size="small" @click="toggleSeatStatus(row)">
-            {{ row.status === 'available' ? '设为维护' : '恢复' }}
-=======
               <span v-else class="muted">—</span>
             </template>
           </el-table-column>
@@ -572,15 +376,12 @@ function creditColor(s) {
             @click="toggleSeatStatus(row)"
           >
             {{ row.status === 'available' ? '设为维护' : '恢复可用' }}
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
           </el-button>
         </template>
       </el-table-column>
     </el-table>
   </el-dialog>
 </template>
-<<<<<<< HEAD
-=======
 
 <style scoped>
 .admin-split { grid-template-columns: 280px 1fr; }
@@ -814,4 +615,3 @@ function creditColor(s) {
 .seat-tip-icon { font-size: 16px; line-height: 1; margin-top: 1px; }
 .seat-tip b { color: #2f4462; font-weight: 600; }
 </style>
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)

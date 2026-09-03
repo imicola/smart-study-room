@@ -1,24 +1,10 @@
 <script setup>
-<<<<<<< HEAD
-import { ref, onMounted, onUnmounted } from 'vue'
-=======
 import { ref, computed, onMounted } from 'vue'
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 import { ElMessage } from 'element-plus'
 import { listNotifications, markRead, markAllRead } from '../api/notification'
 
 const list = ref([])
 const loading = ref(false)
-<<<<<<< HEAD
-
-const typeMeta = {
-  reservation_success: { text: '预约成功', color: '#67c23a' },
-  checkin_reminder: { text: '签到提醒', color: '#409eff' },
-  violation: { text: '违约警告', color: '#f56c6c' },
-  credit_change: { text: '信用变动', color: '#e6a23c' },
-  waitlist_promoted: { text: '候补递补', color: '#9b59f6' },
-  system: { text: '系统', color: '#909399' }
-=======
 const filterType = ref('all')
 
 const typeMeta = {
@@ -28,7 +14,6 @@ const typeMeta = {
   credit_change:      { text: '信用变动', color: '#c78941' },
   waitlist_promoted:  { text: '候补递补', color: '#8a72c0' },
   system:             { text: '系统',     color: '#828c9d' }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }
 
 async function load() {
@@ -57,8 +42,6 @@ function fmtTime(t) {
   return new Date(t).toLocaleString('zh-CN', { hour12: false })
 }
 
-<<<<<<< HEAD
-=======
 const buckets = computed(() => {
   const b = { all: list.value.length, unread: 0 }
   Object.keys(typeMeta).forEach((k) => (b[k] = 0))
@@ -90,40 +73,10 @@ function typeIcon(k) {
   }[k] || '•'
 }
 
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 onMounted(load)
 </script>
 
 <template>
-<<<<<<< HEAD
-  <div class="page-card">
-    <div class="head">
-      <h2 style="margin: 0">消息中心</h2>
-      <el-button @click="onMarkAll">全部已读</el-button>
-    </div>
-
-    <div v-loading="loading" class="list">
-      <el-empty v-if="!list.length" description="暂无消息" />
-      <div
-        v-for="n in list"
-        :key="n.id"
-        class="msg-item"
-        :class="{ unread: !n.is_read }"
-        @click="onMarkRead(n)"
-      >
-        <el-tag size="small" :color="typeMeta[n.type]?.color" effect="dark" style="border: none">
-          {{ typeMeta[n.type]?.text || n.type }}
-        </el-tag>
-        <div class="msg-body">
-          <div class="msg-title">
-            {{ n.title }}
-            <el-badge v-if="!n.is_read" is-dot class="dot" />
-          </div>
-          <div class="msg-content">{{ n.content }}</div>
-        </div>
-        <span class="msg-time">{{ fmtTime(n.created_at) }}</span>
-      </div>
-=======
   <div class="split notif-split">
     <div class="split-left">
       <section class="card">
@@ -199,54 +152,11 @@ onMounted(load)
           </div>
         </div>
       </section>
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
     </div>
   </div>
 </template>
 
 <style scoped>
-<<<<<<< HEAD
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-.msg-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
-  border-radius: 6px;
-}
-.msg-item:hover {
-  background: #f5f7fa;
-}
-.msg-item.unread {
-  background: #ecf5ff40;
-}
-.msg-body {
-  flex: 1;
-}
-.msg-title {
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.msg-content {
-  color: #606266;
-  font-size: 13px;
-  margin-top: 4px;
-}
-.msg-time {
-  color: #c0c4cc;
-  font-size: 12px;
-  white-space: nowrap;
-}
-=======
 .notif-split { grid-template-columns: 280px 1fr; }
 .kpi-warn .kpi-num { color: #c86a6a; }
 
@@ -312,5 +222,4 @@ onMounted(load)
   color: #4b5567; font-size: 13px; line-height: 1.6;
 }
 .tips b { color: #456388; font-weight: 600; }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 </style>

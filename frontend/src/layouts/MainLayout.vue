@@ -1,19 +1,12 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-<<<<<<< HEAD
-import { useRouter } from 'vue-router'
-=======
 import { useRouter, useRoute } from 'vue-router'
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 import { unreadCount } from '../api/notification'
 
 const router = useRouter()
-<<<<<<< HEAD
-=======
 const route = useRoute()
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 const auth = useAuthStore()
 
 // 未读消息角标(60s 轮询)
@@ -28,21 +21,6 @@ async function refreshUnread() {
   } catch { /* 忽略轮询失败 */ }
 }
 
-<<<<<<< HEAD
-// 菜单随迭代补充: 预约/我的预约/热力图/消息/个人中心/管理端
-const menus = computed(() => {
-  const items = [
-    { index: '/booking', title: '座位预约', icon: 'Seat' },
-    { index: '/mine', title: '我的预约', icon: 'Tickets' },
-    { index: '/waitlist', title: '我的候补', icon: 'Clock' },
-    { index: '/analytics', title: '热力图统计', icon: 'DataAnalysis' },
-    { index: '/notifications', title: '消息中心', icon: 'Bell' },
-    { index: '/profile', title: '个人中心', icon: 'User' },
-    { index: '/', title: '首页', icon: 'HomeFilled' }
-  ]
-  if (auth.isAdmin) {
-    items.push({ index: '/admin', title: '管理端', icon: 'Setting' })
-=======
 // 菜单：首页 / 预约 / 我的预约 / 候补 / 统计 / 消息 / 个人中心 / 管理端
 const menus = computed(() => {
   const items = [
@@ -56,17 +34,12 @@ const menus = computed(() => {
   ]
   if (auth.isAdmin) {
     items.push({ index: '/admin', title: '管理端', icon: '⚙️' })
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
   }
   return items
 })
 
 function handleSelect(index) {
-<<<<<<< HEAD
-  router.push(index)
-=======
   if (route.path !== index) router.push(index)
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }
 
 function onLogout() {
@@ -75,15 +48,12 @@ function onLogout() {
   router.push('/login')
 }
 
-<<<<<<< HEAD
-=======
 // 当前页标题（用于右栏顶部 page-header）
 const pageTitle = computed(() => {
   const hit = menus.value.find((m) => m.index === route.path)
   return hit?.title || route.meta?.title || '智能共享自习室'
 })
 
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 onMounted(() => {
   refreshUnread()
   timer = setInterval(refreshUnread, 60000)
@@ -92,91 +62,6 @@ onUnmounted(() => clearInterval(timer))
 </script>
 
 <template>
-<<<<<<< HEAD
-  <el-container class="layout">
-    <el-aside width="220px" class="aside">
-      <div class="logo">📚 智能自习室</div>
-      <el-menu :default-active="$route.path" router @select="handleSelect">
-        <el-menu-item v-for="m in menus" :key="m.index" :index="m.index">
-          <span>{{ m.title }}</span>
-        </el-menu-item>
-      </el-menu>
-    </el-aside>
-    <el-container>
-      <el-header class="header">
-        <div class="header-title">智能共享自习室预约系统</div>
-        <div class="header-right">
-          <el-badge :value="unread" :hidden="unread === 0" :max="99" class="bell-badge">
-            <el-button text @click="router.push('/notifications')">🔔</el-button>
-          </el-badge>
-          <el-dropdown v-if="auth.isLoggedIn" @command="(cmd) => cmd === 'logout' && onLogout()">
-            <span class="user-chip">
-              {{ auth.user?.real_name || auth.user?.username }}
-              <el-tag size="small" :type="auth.isAdmin ? 'danger' : 'primary'">
-                {{ auth.isAdmin ? '管理员' : '学生' }}
-              </el-tag>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </el-header>
-      <el-main class="main">
-        <router-view />
-      </el-main>
-    </el-container>
-  </el-container>
-</template>
-
-<style scoped>
-.layout {
-  height: 100%;
-}
-.aside {
-  background: #fff;
-  border-right: 1px solid #e4e7ed;
-}
-.logo {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: #409eff;
-  border-bottom: 1px solid #e4e7ed;
-}
-.header {
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.header-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-.bell-badge {
-  margin-right: 4px;
-}
-.user-chip {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.main {
-  padding: 16px;
-=======
   <!-- 第一层双栏：外壳 = 左 Sidebar | 右 Content Column -->
   <div class="shell">
     <!-- ============== 左栏（导航 / 品牌 / 用户） ============== -->
@@ -507,6 +392,5 @@ onUnmounted(() => clearInterval(timer))
   .user-card {
     justify-content: center;
   }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }
 </style>

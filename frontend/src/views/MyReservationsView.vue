@@ -8,16 +8,6 @@ import {
 
 const list = ref([])
 const loading = ref(false)
-<<<<<<< HEAD
-
-const statusMeta = {
-  pending: { text: '待签到', type: 'warning' },
-  checked_in: { text: '使用中', type: 'success' },
-  temp_leave: { text: '临时离开', type: 'info' },
-  completed: { text: '已完成', type: '' },
-  cancelled: { text: '已取消', type: 'info' },
-  violation: { text: '已违约', type: 'danger' }
-=======
 const filterStatus = ref('all')
 
 const statusMeta = {
@@ -27,7 +17,6 @@ const statusMeta = {
   completed:   { text: '已完成',   type: '' },
   cancelled:   { text: '已取消',   type: 'info' },
   violation:   { text: '已违约',   type: 'danger' }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }
 const sourceMeta = { manual: '手动选座', auto: '智能分配', waitlist: '候补递补' }
 
@@ -41,28 +30,10 @@ async function load() {
   }
 }
 
-<<<<<<< HEAD
-// 各状态可执行的操作
-=======
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 function actionsOf(r) {
   switch (r.status) {
     case 'pending':
       return [
-<<<<<<< HEAD
-        { key: 'checkin', label: '签到', type: 'primary' },
-        { key: 'cancel', label: '取消预约', type: 'danger', plain: true }
-      ]
-    case 'checked_in':
-      return [
-        { key: 'leave', label: '临时离开', type: 'warning', plain: true },
-        { key: 'checkout', label: '签退', type: 'primary' }
-      ]
-    case 'temp_leave':
-      return [
-        { key: 'return', label: '返回座位', type: 'success' },
-        { key: 'checkout', label: '提前结束', type: 'info', plain: true }
-=======
         { key: 'checkin', label: '签到',     type: 'primary' },
         { key: 'cancel',  label: '取消预约', type: 'danger',  plain: true }
       ]
@@ -75,7 +46,6 @@ function actionsOf(r) {
       return [
         { key: 'return',   label: '返回座位', type: 'success' },
         { key: 'checkout', label: '提前结束', type: 'info',    plain: true }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
       ]
     default:
       return []
@@ -83,16 +53,8 @@ function actionsOf(r) {
 }
 
 const apiMap = {
-<<<<<<< HEAD
-  checkin: checkinReservation,
-  cancel: cancelReservation,
-  leave: leaveReservation,
-  return: returnReservation,
-  checkout: checkoutReservation
-=======
   checkin: checkinReservation, cancel: cancelReservation, leave: leaveReservation,
   return: returnReservation, checkout: checkoutReservation
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }
 const actionText = {
   checkin: '签到', cancel: '取消', leave: '临时离开', return: '返回', checkout: '签退'
@@ -112,8 +74,6 @@ async function doAction(r, key) {
   load()
 }
 
-<<<<<<< HEAD
-=======
 // 左栏状态快筛
 const statusBuckets = computed(() => {
   const b = { all: list.value.length, pending: 0, checked_in: 0, temp_leave: 0, completed: 0, violation: 0 }
@@ -134,60 +94,10 @@ const statusNav = [
   { key: 'violation',  label: '已违约', icon: '⚠️' }
 ]
 
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 onMounted(load)
 </script>
 
 <template>
-<<<<<<< HEAD
-  <div class="page-card">
-    <div class="head">
-      <h2 style="margin: 0">我的预约</h2>
-      <el-button @click="load">刷新</el-button>
-    </div>
-
-    <el-table v-loading="loading" :data="list" stripe>
-      <el-table-column label="日期" width="110">
-        <template #default="{ row }">{{ row.res_date }}</template>
-      </el-table-column>
-      <el-table-column label="时段" width="130">
-        <template #default="{ row }">{{ row.start_time.slice(0, 5) }} - {{ row.end_time.slice(0, 5) }}</template>
-      </el-table-column>
-      <el-table-column label="自习室" prop="room_name" min-width="130" />
-      <el-table-column label="座位" width="80">
-        <template #default="{ row }">
-          <b>{{ row.seat_no }}</b>
-        </template>
-      </el-table-column>
-      <el-table-column label="来源" width="90">
-        <template #default="{ row }">
-          <el-tag size="small" effect="plain">{{ sourceMeta[row.source] || row.source }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" width="90">
-        <template #default="{ row }">
-          <el-tag size="small" :type="statusMeta[row.status]?.type">
-            {{ statusMeta[row.status]?.text || row.status }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" min-width="220">
-        <template #default="{ row }">
-          <el-button
-            v-for="a in actionsOf(row)"
-            :key="a.key"
-            size="small"
-            :type="a.type"
-            :plain="a.plain"
-            @click="doAction(row, a.key)"
-          >
-            {{ a.label }}
-          </el-button>
-          <span v-if="!actionsOf(row).length" class="dim">—</span>
-        </template>
-      </el-table-column>
-    </el-table>
-=======
   <!-- 我的预约：页面级双栏 = 左状态筛选 | 右列表 -->
   <div class="split mine-split">
     <div class="split-left">
@@ -285,22 +195,10 @@ onMounted(load)
         <el-empty v-if="!filtered.length && !loading" description="当前筛选条件下暂无预约记录" />
       </section>
     </div>
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
   </div>
 </template>
 
 <style scoped>
-<<<<<<< HEAD
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-.dim {
-  color: #c0c4cc;
-}
-=======
 .mine-split { grid-template-columns: 300px 1fr; }
 
 .kpi-lg .kpi-num { font-size: 24px; }
@@ -358,5 +256,4 @@ onMounted(load)
 }
 .tips b { color: #456388; font-weight: 600; }
 .dim { color: #c0c4cc; }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 </style>

@@ -125,16 +125,6 @@ async function onRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-<<<<<<< HEAD
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.login-card {
-  width: 400px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 32px 36px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
-=======
   /* 同色系(hue≈215°雾霾蓝灰) + 低饱和(22%~30%)渐变：仅靠明度变化营造层次 */
   background:
     radial-gradient(ellipse at 20% 15%, rgba(255, 255, 255, 0.55), transparent 55%),
@@ -164,7 +154,6 @@ async function onRegister() {
     0 1px 2px rgba(108, 128, 160, 0.06),
     0 12px 40px rgba(108, 128, 160, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.7);
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 }
 .title {
   text-align: center;

@@ -8,15 +8,9 @@ const overview = ref(null)
 
 const scoreColor = computed(() => {
   const s = overview.value?.score ?? 100
-<<<<<<< HEAD
-  if (s >= 80) return '#67c23a'
-  if (s >= 60) return '#e6a23c'
-  return '#f56c6c'
-=======
   if (s >= 80) return '#5fa655'
   if (s >= 60) return '#c78941'
   return '#c86a6a'
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 })
 
 const banned = computed(() => {
@@ -31,32 +25,6 @@ onMounted(async () => {
 </script>
 
 <template>
-<<<<<<< HEAD
-  <div class="page-card">
-    <h2 style="margin-top: 0">个人中心</h2>
-
-    <div class="grid2">
-      <!-- 基本信息卡片 -->
-      <div class="card">
-        <h3>基本信息</h3>
-        <el-descriptions :column="1" border>
-          <el-descriptions-item label="用户名">{{ auth.user?.username }}</el-descriptions-item>
-          <el-descriptions-item label="姓名">{{ auth.user?.real_name }}</el-descriptions-item>
-          <el-descriptions-item label="学号">{{ auth.user?.student_no || '—' }}</el-descriptions-item>
-          <el-descriptions-item label="角色">
-            <el-tag size="small" :type="auth.isAdmin ? 'danger' : 'primary'">
-              {{ auth.isAdmin ? '管理员' : '学生' }}
-            </el-tag>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-
-      <!-- 信用卡片 -->
-      <div class="card">
-        <h3>我的信用</h3>
-        <div v-if="overview" class="credit-box">
-          <el-progress type="dashboard" :percentage="overview.score" :color="scoreColor" :width="140">
-=======
   <div class="split profile-split">
     <div class="split-left">
       <!-- 用户卡片 -->
@@ -87,7 +55,6 @@ onMounted(async () => {
         <div class="card-title-row"><h3>我的信用</h3></div>
         <div v-if="overview" class="credit-box">
           <el-progress type="dashboard" :percentage="overview.score" :color="scoreColor" :width="152">
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
             <template #default>
               <div class="score-num" :style="{ color: scoreColor }">{{ overview.score }}</div>
               <div class="score-label">信用分</div>
@@ -106,29 +73,6 @@ onMounted(async () => {
             规则：违约 −8 · 迟到取消 −2 · 按期履约 +1 · 低于 60 分禁约 3 天
           </div>
         </div>
-<<<<<<< HEAD
-      </div>
-    </div>
-
-    <!-- 信用流水 -->
-    <h3>信用流水</h3>
-    <el-table :data="overview?.logs || []" stripe max-height="400">
-      <el-table-column label="时间" width="170">
-        <template #default="{ row }">{{ new Date(row.created_at).toLocaleString('zh-CN', { hour12: false }) }}</template>
-      </el-table-column>
-      <el-table-column label="变动" width="90">
-        <template #default="{ row }">
-          <span :class="row.delta > 0 ? 'up' : 'down'">
-            {{ row.delta > 0 ? '+' + row.delta : row.delta }}
-          </span>
-        </template>
-      </el-table-column>
-      <el-table-column label="事由" prop="reason" min-width="260" />
-      <el-table-column label="关联预约" width="100">
-        <template #default="{ row }">#{{ row.reservation_id ?? '—' }}</template>
-      </el-table-column>
-    </el-table>
-=======
       </section>
     </div>
 
@@ -157,53 +101,10 @@ onMounted(async () => {
         <el-empty v-if="!overview?.logs?.length" description="暂无信用记录" />
       </section>
     </div>
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
   </div>
 </template>
 
 <style scoped>
-<<<<<<< HEAD
-.grid2 {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-.card {
-  flex: 1;
-  min-width: 320px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  padding: 14px;
-}
-.credit-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 0;
-}
-.score-num {
-  font-size: 30px;
-  font-weight: 700;
-}
-.score-label {
-  font-size: 12px;
-  color: #909399;
-}
-.rule-tip {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 10px;
-}
-.up {
-  color: #67c23a;
-  font-weight: 600;
-}
-.down {
-  color: #f56c6c;
-  font-weight: 600;
-}
-=======
 .profile-split { grid-template-columns: 320px 1fr; }
 
 .profile-card {
@@ -254,5 +155,4 @@ onMounted(async () => {
 
 .up   { color: #5fa655; font-weight: 700; }
 .down { color: #c86a6a; font-weight: 700; }
->>>>>>> 958d510 (chore: init smart-study-room with ui redesign)
 </style>
