@@ -1,22 +1,26 @@
 %% 图 3-3 热力图数据流程图
 flowchart LR
-    A[/前端: 选择房间+日期/] --> B[GET /api/stats/heatmap]
+    A[前端: 选择房间+日期] --> B[GET /api/stats/heatmap]
     B --> C[StatsService.Heatmap]
     C --> D[RoomsRepo.GetByID<br/>取开放时段]
     C --> E[SeatsRepo.ListByRoom<br/>按行列排序]
     C --> F[StatsRepo.SeatHourOccupancy]
 
-    subgraph SQL[单条聚合查询]
-        F --> G[generate_series<br/>开放时间小时轴<br/>(与查询日期对齐)]
-        G --> H[EXISTS 子查询<br/>占用类预约 tsrange<br/>与 该小时区间 &amp;&amp;]
-        H --> I[(seats × hours<br/>平铺占用布尔)]
+    subgraph sqlblock[单条聚合查询]
+        G[generate_series<br/>开放时间小时轴<br/>与查询日期对齐]
+        H[EXISTS 子查询<br/>占用类预约 tsrange<br/>与该小时区间重叠判定]
+        I[(seats × hours<br/>平铺占用布尔)]
     end
+
+    F --> G
+    G --> H
+    H --> I
 
     I --> J[Go 组装: 去重小时轴<br/>展开 座位×小时 0/1 矩阵]
     E --> J
-    J --> K[计算每小时利用率<br/>count(occupied)/座位数]
+    J --> K[计算每小时利用率<br/>count occupied / 座位数]
     D --> L[HeatmapResponse<br/>room/hours/seats/cells/hourly_usage]
     J --> L
     K --> L
     L --> M[ECharts heatmap<br/>x=小时 y=座位 value=占用]
-    M --> N[/颜色梯度渲染给用户/]
+    M --> N[颜色梯度渲染给用户]
