@@ -7,6 +7,10 @@
   box-sizing: border-box;
 }
 
+:root {
+  --app-canvas-background: #f2f4f8;
+}
+
 html,
 body,
 #app {
@@ -16,7 +20,7 @@ body,
   font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei',
     Arial, sans-serif;
   /* 全局画布：与登录页同色系的极浅蓝灰 */
-  background: #f2f4f8;
+  background: var(--app-canvas-background);
   color: #2b3240;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
