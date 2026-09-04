@@ -29,10 +29,29 @@ body,
 /* ---------- 全局双栏布局 tokens（页面内通用） ---------- */
 .split {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: 18px;
   align-items: start;
   min-height: 0;
+}
+
+/* ---------- 页面正文：标题归属当前页面，宿主不再额外包裹间距 ---------- */
+.page-view {
+  min-width: 0;
+  min-height: 100%;
+  padding: 22px 24px 24px;
+}
+.view-heading {
+  margin: 0 4px 18px;
+  transform-origin: center top;
+}
+.view-heading h1 {
+  margin: 0;
+  color: #243044;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: .2px;
 }
 .split-left,
 .split-right {
@@ -136,10 +155,184 @@ body,
   color: #a2abb9;
   font-size: 12px;
 }
+.el-button .app-icon {
+  margin-right: 6px;
+  flex: 0 0 auto;
+}
 
-/* ---------- 响应式：窄屏退化为单栏 ---------- */
+/* ---------- 响应式内容容器 ---------- */
+.responsive-compact,
+.responsive-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+.responsive-scroll {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #bdc7d5 transparent;
+  box-shadow: inset -14px 0 12px -14px rgba(47, 68, 98, .5);
+}
+.responsive-scroll::-webkit-scrollbar {
+  height: 7px;
+}
+.responsive-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #bdc7d5;
+}
+.responsive-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- 响应式：各功能页统一退化策略 ---------- */
+@media (max-width: 1280px) {
+  .split,
+  .split.home-split,
+  .split.booking-split,
+  .split.mine-split,
+  .split.wl-split,
+  .split.analytics-split,
+  .split.notif-split,
+  .split.profile-split,
+  .split.admin-split {
+    grid-template-columns: minmax(260px, 28%) minmax(0, 1fr);
+    gap: 16px;
+  }
+  .page-view .split.home-split,
+  .page-view .split.booking-split,
+  .page-view .split.mine-split,
+  .page-view .split.wl-split,
+  .page-view .split.analytics-split,
+  .page-view .split.notif-split,
+  .page-view .split.profile-split,
+  .page-view .split.admin-split {
+    grid-template-columns: minmax(260px, 28%) minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 1024px) {
-  .split {
+  .page-view {
+    padding: 82px 16px 20px;
+  }
+  .view-heading {
+    margin: 0 4px 16px;
+    will-change: transform, opacity;
+  }
+  .view-heading h1 {
+    font-size: 28px;
+  }
+  .split,
+  .split.home-split,
+  .split.booking-split,
+  .split.mine-split,
+  .split.wl-split,
+  .split.analytics-split,
+  .split.notif-split,
+  .split.profile-split,
+  .split.profile-split.profile-admin,
+  .split.admin-split {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .page-view .split.home-split,
+  .page-view .split.booking-split,
+  .page-view .split.mine-split,
+  .page-view .split.wl-split,
+  .page-view .split.analytics-split,
+  .page-view .split.notif-split,
+  .page-view .split.profile-split,
+  .page-view .split.profile-split.profile-admin,
+  .page-view .split.admin-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .split-left,
+  .split-right {
+    gap: 14px;
+  }
+  .split-left {
+    order: 0;
+  }
+  .split-right {
+    order: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-view {
+    padding: 78px 12px 16px;
+  }
+  .view-heading {
+    margin: 0 4px 14px;
+  }
+  .view-heading h1 {
+    font-size: 28px;
+  }
+  .card,
+  .page-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .card-title-row {
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .kpi {
+    padding: 11px 12px;
+  }
+  .kpi-num {
+    font-size: 20px;
+  }
+  .el-dialog {
+    width: calc(100vw - 24px) !important;
+    max-width: 620px;
+    margin-top: 8vh !important;
+  }
+  .el-message-box {
+    width: calc(100vw - 24px) !important;
+  }
+  .el-form-item__content,
+  .el-select,
+  .el-date-editor.el-input,
+  .el-date-editor.el-input__wrapper {
+    min-width: 0;
+    width: 100%;
+  }
+  .el-table {
+    max-width: 100%;
+  }
+  .responsive-compact {
+    width: 100%;
+    max-width: 640px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-view {
+    padding-inline: 10px;
+  }
+  .view-heading h1 {
+    font-size: 26px;
+  }
+  .kpi-grid {
+    gap: 8px;
+  }
+  .card,
+  .page-card {
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

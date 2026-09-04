@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { listNotifications, markRead, markAllRead } from '../api/notification'
+import AppIcon from '../components/AppIcon.vue'
 
 const list = ref([])
 const loading = ref(false)
@@ -58,28 +59,30 @@ const filtered = computed(() => {
 })
 
 const typeNav = computed(() => ([
-  { key: 'all',    label: '全部消息', icon: '📬' },
-  { key: 'unread', label: '未读消息', icon: '🔔' },
+  { key: 'all',    label: '全部消息', icon: 'inbox' },
+  { key: 'unread', label: '未读消息', icon: 'notification' },
   ...Object.keys(typeMeta).map((k) => ({ key: k, label: typeMeta[k].text, icon: typeIcon(k) }))
 ]))
 function typeIcon(k) {
   return {
-    reservation_success: '✅',
-    checkin_reminder: '⏰',
-    violation: '⚠️',
-    credit_change: '💳',
-    waitlist_promoted: '🎟️',
-    system: '📢'
-  }[k] || '•'
+    reservation_success: 'circle-success',
+    checkin_reminder: 'waitlist',
+    violation: 'warning',
+    credit_change: 'credit',
+    waitlist_promoted: 'ticket',
+    system: 'announcement'
+  }[k] || 'circle-muted'
 }
 
 onMounted(load)
 </script>
 
 <template>
-  <div class="split notif-split">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>消息中心</h1></header>
+    <div class="split notif-split">
     <div class="split-left">
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row">
           <h3>消息总览</h3>
           <el-badge :value="buckets.unread" :hidden="buckets.unread === 0" :max="99">
@@ -92,7 +95,7 @@ onMounted(load)
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row"><h3>消息分类</h3></div>
         <div class="nav-list">
           <button
@@ -102,14 +105,14 @@ onMounted(load)
             :class="{ active: filterType === n.key }"
             @click="filterType = n.key"
           >
-            <span class="nav-icon">{{ n.icon }}</span>
+            <span class="nav-icon"><AppIcon :name="n.icon" :size="17" /></span>
             <span class="nav-label">{{ n.label }}</span>
             <span class="nav-count">{{ buckets[n.key] ?? 0 }}</span>
           </button>
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <h3>使用提示</h3>
         <ul class="tips">
           <li>点击消息条目将其标记为<b>已读</b></li>
@@ -152,6 +155,7 @@ onMounted(load)
           </div>
         </div>
       </section>
+    </div>
     </div>
   </div>
 </template>
@@ -222,4 +226,17 @@ onMounted(load)
   color: #4b5567; font-size: 13px; line-height: 1.6;
 }
 .tips b { color: #456388; font-weight: 600; }
+
+@media (max-width: 720px) {
+  .msg-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px 10px;
+    padding: 12px;
+  }
+  .msg-item :deep(.el-tag) { width: fit-content; }
+  .msg-time {
+    grid-column: 1;
+    white-space: normal;
+  }
+}
 </style>

@@ -6,7 +6,9 @@ const props = defineProps({
   sidebarCollapsed: { type: Boolean, default: true },
   atTop: { type: Boolean, default: true },
   menus: { type: Array, default: () => [] },
-  currentPath: { type: String, default: '/' }
+  currentPath: { type: String, default: '/' },
+  pageTitle: { type: String, default: '' },
+  titleProgress: { type: Number, default: 0 }
 })
 
 const emit = defineEmits(['open-sidebar', 'navigate'])
@@ -47,7 +49,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
-  <header class="mobile-topbar" aria-label="移动端快捷导航">
+  <header
+    class="mobile-topbar"
+    :style="{
+      '--title-progress': Math.max(0, Math.min(1, titleProgress)),
+      '--title-offset': `${(1 - Math.max(0, Math.min(1, titleProgress))) * 10}px`
+    }"
+    aria-label="移动端快捷导航"
+  >
     <button
       v-if="sidebarCollapsed"
       type="button"
@@ -60,6 +69,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
       <AppIcon name="sidebar-expand" :size="21" />
     </button>
     <span v-else class="topbar-placeholder" />
+
+    <div class="mobile-page-title" aria-live="polite">
+      {{ pageTitle }}
+    </div>
 
     <div
       v-if="isQuickMenuOpen"
@@ -120,6 +133,18 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   box-shadow: none;
   pointer-events: none;
 }
+.mobile-topbar::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: var(--app-canvas-background);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, .2) 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, .2) 100%);
+  pointer-events: none;
+}
 .mobile-topbar,
 .mobile-topbar * {
   box-sizing: border-box;
@@ -128,9 +153,27 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   margin: 0;
   font-family: inherit;
 }
+.mobile-page-title {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 18px;
+  max-width: calc(100vw - 144px);
+  overflow: hidden;
+  color: #2f3f56;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 28px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: var(--title-progress);
+  transform: translate3d(-50%, var(--title-offset), 0);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
 .topbar-action,
 .quick-menu-shell {
-  border: 1px solid #94a3b8;
+  border: 0;
   background: var(--app-canvas-background);
   color: #35465e;
   box-shadow: none;
@@ -147,21 +190,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   border-radius: 50%;
   cursor: pointer;
   pointer-events: auto;
-  transition: border-color .16s ease, color .16s ease, background .16s ease;
-}
-.topbar-action.at-top,
-.quick-menu-shell.at-top {
-  border-color: transparent;
+  transition: color .16s ease, background .16s ease;
 }
 .topbar-action:hover,
 .quick-menu-shell:not(.expanded):hover {
   color: #203149;
-  background: var(--app-canvas-background);
-  border-color: #7f91a8;
-}
-.topbar-action.at-top:hover,
-.quick-menu-shell.at-top:not(.expanded):hover {
-  border-color: transparent;
+  background: rgba(255, 255, 255, .48);
 }
 .topbar-action:focus-visible,
 .quick-menu-trigger:focus-visible,
@@ -197,7 +231,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   width: 228px;
   height: var(--quick-menu-height);
   border-radius: 16px;
-  border-color: #94a3b8;
+  border: 1px solid #94a3b8;
   background: #fff;
 }
 .quick-menu-trigger {

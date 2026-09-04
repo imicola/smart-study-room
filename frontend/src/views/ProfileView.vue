@@ -26,10 +26,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="split profile-split" :class="{ 'profile-admin': auth.isAdmin }">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>个人中心</h1></header>
+    <div class="split profile-split" :class="{ 'profile-admin': auth.isAdmin }">
     <div class="split-left">
       <!-- 用户卡片 -->
-      <section class="card profile-card">
+      <section class="card profile-card responsive-compact">
         <div class="avatar-lg">
           {{ (auth.user?.real_name || auth.user?.username || '?').slice(0, 1) }}
         </div>
@@ -43,7 +45,7 @@ onMounted(async () => {
       </section>
 
       <!-- 基本信息 -->
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row"><h3>基本信息</h3></div>
         <div class="info-row"><span>姓名</span><b>{{ auth.user?.real_name || '—' }}</b></div>
         <div class="info-row"><span>用户名</span><b>{{ auth.user?.username || '—' }}</b></div>
@@ -53,7 +55,7 @@ onMounted(async () => {
       </section>
 
       <!-- 信用卡 -->
-      <section v-if="auth.isStudent" class="card">
+      <section v-if="auth.isStudent" class="card responsive-compact">
         <div class="card-title-row"><h3>我的信用</h3></div>
         <div v-if="overview" class="credit-box">
           <el-progress type="dashboard" :percentage="overview.score" :color="scoreColor" :width="152">
@@ -84,7 +86,8 @@ onMounted(async () => {
           <h3>信用分流水</h3>
           <span class="muted">最新 {{ overview?.logs?.length || 0 }} 条记录</span>
         </div>
-        <el-table :data="overview?.logs || []" stripe max-height="600">
+        <div class="responsive-scroll" tabindex="0" aria-label="信用分流水表格，可左右滑动">
+        <el-table :data="overview?.logs || []" stripe max-height="600" class="credit-table">
           <el-table-column label="时间" width="180">
             <template #default="{ row }">{{ new Date(row.created_at).toLocaleString('zh-CN', { hour12: false }) }}</template>
           </el-table-column>
@@ -100,14 +103,17 @@ onMounted(async () => {
             <template #default="{ row }">#{{ row.reservation_id ?? '—' }}</template>
           </el-table-column>
         </el-table>
+        </div>
         <el-empty v-if="!overview?.logs?.length" description="暂无信用记录" />
       </section>
+    </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .profile-split { grid-template-columns: 320px 1fr; }
+.credit-table { min-width: 650px; }
 .profile-split.profile-admin {
   grid-template-columns: minmax(320px, 520px);
   justify-content: start;

@@ -5,6 +5,7 @@ import {
   listMyReservations, cancelReservation, checkinReservation,
   leaveReservation, returnReservation, checkoutReservation
 } from '../api/reservation'
+import AppIcon from '../components/AppIcon.vue'
 
 const list = ref([])
 const loading = ref(false)
@@ -86,25 +87,27 @@ const filtered = computed(() => {
 })
 
 const statusNav = [
-  { key: 'all',        label: '全部',   icon: '📋' },
-  { key: 'pending',    label: '待签到', icon: '⏰' },
-  { key: 'checked_in', label: '使用中', icon: '🟢' },
-  { key: 'temp_leave', label: '临离开', icon: '🚶' },
-  { key: 'completed',  label: '已完成', icon: '✅' },
-  { key: 'violation',  label: '已违约', icon: '⚠️' }
+  { key: 'all',        label: '全部',   icon: 'reservations' },
+  { key: 'pending',    label: '待签到', icon: 'waitlist' },
+  { key: 'checked_in', label: '使用中', icon: 'circle-success' },
+  { key: 'temp_leave', label: '临离开', icon: 'walk' },
+  { key: 'completed',  label: '已完成', icon: 'check' },
+  { key: 'violation',  label: '已违约', icon: 'warning' }
 ]
 
 onMounted(load)
 </script>
 
 <template>
-  <!-- 我的预约：页面级双栏 = 左状态筛选 | 右列表 -->
-  <div class="split mine-split">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>我的预约</h1></header>
+    <!-- 我的预约：页面级双栏 = 左状态筛选 | 右列表 -->
+    <div class="split mine-split">
     <div class="split-left">
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row">
           <h3>预约概览</h3>
-          <el-button size="small" @click="load">🔄 刷新</el-button>
+          <el-button size="small" @click="load"><AppIcon name="refresh" :size="15" />刷新</el-button>
         </div>
         <div class="kpi-grid kpi-lg">
           <div class="kpi"><div class="kpi-num">{{ statusBuckets.all }}</div><div class="kpi-label">累计预约</div></div>
@@ -114,7 +117,7 @@ onMounted(load)
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row">
           <h3>状态筛选</h3>
         </div>
@@ -126,14 +129,14 @@ onMounted(load)
             :class="{ active: filterStatus === s.key }"
             @click="filterStatus = s.key"
           >
-            <span class="status-icon">{{ s.icon }}</span>
+            <span class="status-icon"><AppIcon :name="s.icon" :size="17" /></span>
             <span class="status-label">{{ s.label }}</span>
             <span class="status-count">{{ statusBuckets[s.key] ?? 0 }}</span>
           </button>
         </div>
       </section>
 
-      <section class="card tips-card">
+      <section class="card tips-card responsive-compact">
         <h3>操作说明</h3>
         <ul class="tips">
           <li>开始前 <b>15 分钟</b> 内可签到</li>
@@ -152,7 +155,8 @@ onMounted(load)
           </h3>
         </div>
 
-        <el-table v-loading="loading" :data="filtered" stripe>
+        <div class="responsive-scroll" tabindex="0" aria-label="预约记录表格，可左右滑动">
+        <el-table v-loading="loading" :data="filtered" stripe class="mine-table">
           <el-table-column label="日期" width="110">
             <template #default="{ row }">{{ row.res_date }}</template>
           </el-table-column>
@@ -191,9 +195,11 @@ onMounted(load)
             </template>
           </el-table-column>
         </el-table>
+        </div>
 
         <el-empty v-if="!filtered.length && !loading" description="当前筛选条件下暂无预约记录" />
       </section>
+    </div>
     </div>
   </div>
 </template>
@@ -256,4 +262,5 @@ onMounted(load)
 }
 .tips b { color: #456388; font-weight: 600; }
 .dim { color: #c0c4cc; }
+.mine-table { min-width: 974px; }
 </style>

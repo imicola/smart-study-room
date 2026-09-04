@@ -1,7 +1,9 @@
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useAuthStore } from '../stores/auth'
 import { unreadCount } from '../api/notification'
 import AppIcon from '../components/AppIcon.vue'
@@ -14,8 +16,11 @@ const narrowMediaQuery = window.matchMedia('(max-width: 1024px)')
 const isNarrowScreen = ref(narrowMediaQuery.matches)
 const isSidebarCollapsed = ref(narrowMediaQuery.matches)
 const isAtTop = ref(true)
+const mobileTitleProgress = ref(0)
+const mobilePageTitle = ref('')
 const contentRef = ref(null)
 const isDesktopCollapsed = computed(() => !isNarrowScreen.value && isSidebarCollapsed.value)
+let titleMedia = null
 
 // 未读消息角标(60s 轮询)
 const unread = ref(0)
@@ -83,6 +88,7 @@ function onNarrowChange(event) {
   isNarrowScreen.value = event.matches
   isSidebarCollapsed.value = event.matches
   isAtTop.value = event.matches ? (contentRef.value?.scrollTop || 0) <= 1 : true
+  nextTick(setupMobileTitleAnimation)
 }
 
 function onContentScroll(event) {
@@ -96,10 +102,79 @@ function onKeydown(event) {
   }
 }
 
-// 当前页标题（用于右栏顶部 page-header）
-const pageTitle = computed(() => {
-  const hit = menus.value.find((m) => m.index === route.path)
-  return hit?.title || route.meta?.title || '智能共享自习室'
+function cleanupMobileTitleAnimation() {
+  titleMedia?.revert()
+  titleMedia = null
+  mobileTitleProgress.value = 0
+}
+
+function setupMobileTitleAnimation() {
+  cleanupMobileTitleAnimation()
+  const scroller = contentRef.value
+  const heading = scroller?.querySelector('[data-page-title]')
+  if (!scroller || !heading) return
+  mobilePageTitle.value = heading.textContent?.trim() || route.meta?.title || ''
+
+  titleMedia = gsap.matchMedia()
+  titleMedia.add(
+    {
+      isNarrow: '(max-width: 1024px)',
+      reduceMotion: '(prefers-reduced-motion: reduce)'
+    },
+    (context) => {
+      const { isNarrow, reduceMotion } = context.conditions
+      if (!isNarrow) return
+
+      if (reduceMotion) {
+        const trigger = ScrollTrigger.create({
+          trigger: heading,
+          scroller,
+          start: 'top 52px',
+          onEnter: () => {
+            gsap.set(heading, { autoAlpha: 0, y: 0 })
+            mobileTitleProgress.value = 1
+          },
+          onLeaveBack: () => {
+            gsap.set(heading, { autoAlpha: 1, y: 0 })
+            mobileTitleProgress.value = 0
+          }
+        })
+        return () => trigger.kill()
+      }
+
+      const tween = gsap.fromTo(
+        heading,
+        { autoAlpha: 1, y: 0 },
+        {
+          autoAlpha: 0,
+          y: -12,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heading,
+            scroller,
+            start: 'top 72px',
+            end: 'top 32px',
+            scrub: 0.18,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              mobileTitleProgress.value = self.progress
+            }
+          }
+        }
+      )
+      return () => tween.kill()
+    },
+    scroller
+  )
+  ScrollTrigger.refresh()
+}
+
+watch(() => route.fullPath, async () => {
+  cleanupMobileTitleAnimation()
+  mobilePageTitle.value = ''
+  if (contentRef.value) contentRef.value.scrollTop = 0
+  await nextTick()
+  setupMobileTitleAnimation()
 })
 
 onMounted(() => {
@@ -109,8 +184,10 @@ onMounted(() => {
     refreshUnread()
     timer = setInterval(refreshUnread, 60000)
   }
+  nextTick(setupMobileTitleAnimation)
 })
 onUnmounted(() => {
+  cleanupMobileTitleAnimation()
   narrowMediaQuery.removeEventListener('change', onNarrowChange)
   window.removeEventListener('keydown', onKeydown)
   if (timer) clearInterval(timer)
@@ -133,6 +210,8 @@ onUnmounted(() => {
       :at-top="isAtTop"
       :menus="menus"
       :current-path="route.path"
+      :page-title="mobilePageTitle"
+      :title-progress="mobileTitleProgress"
       @open-sidebar="openSidebar"
       @navigate="handleSelect"
     />
@@ -225,21 +304,8 @@ onUnmounted(() => {
       </div>
     </aside>
 
-    <!-- ============== 右栏（页面标题行 + 主体） ============== -->
+    <!-- ============== 右栏（页面正文；标题由各页面自己维护） ============== -->
     <section ref="contentRef" class="content" @scroll="onContentScroll">
-      <!-- 右栏顶部：页面标题 + 辅助操作 -->
-      <header class="page-header">
-        <div>
-          <div class="page-crumb">
-            智能共享自习室预约系统 <span class="crumb-sep">/</span> {{ pageTitle }}
-          </div>
-          <h1 class="page-title">{{ pageTitle }}</h1>
-        </div>
-        <div class="page-header-right">
-          <slot name="header-actions" />
-        </div>
-      </header>
-
       <!-- 每个页面自行使用 .split 实现"页面级双栏" -->
       <main class="page-body">
         <router-view />
@@ -492,34 +558,8 @@ onUnmounted(() => {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 18px 24px 24px;
-}
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 4px 4px 16px;
-}
-.page-crumb {
-  font-size: 12px;
-  color: #94a0b2;
-  letter-spacing: 0.3px;
-}
-.crumb-sep {
-  margin: 0 6px;
-  color: #cfd5df;
-}
-.page-title {
-  margin: 4px 0 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: #243044;
-  letter-spacing: 0.2px;
-}
-.page-header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  padding: 0;
+  overflow: hidden;
 }
 .page-body {
   flex: 1;
@@ -560,16 +600,13 @@ onUnmounted(() => {
     display: block;
     width: 100%;
     height: 100%;
-    padding: 72px 16px 20px;
+    padding: 0;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
   .mobile-sidebar-open .content {
     overflow: hidden;
-  }
-  .page-header {
-    padding: 4px 4px 16px;
   }
   .page-body {
     min-height: 0;

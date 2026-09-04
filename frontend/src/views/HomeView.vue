@@ -2,25 +2,26 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import AppIcon from '../components/AppIcon.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 
 const who = computed(() => auth.user?.real_name || auth.user?.username || '同学')
 const roleText = computed(() => (auth.isAdmin ? '管理员' : '学生'))
-const helloText = computed(() => auth.isAdmin ? '欢迎回来，请查看今日运营情况' : '今天也要高效学习呀 ✨')
+const helloText = computed(() => auth.isAdmin ? '欢迎回来，请查看今日运营情况' : '今天也要高效学习')
 
 const shortcuts = computed(() => auth.isAdmin
   ? [
-      { title: '热力图统计', desc: '座位利用率 · 高峰时段', icon: '📊', to: '/analytics', tone: 'warm' },
-      { title: '管理端', desc: '自习室 · 座位 · 用户', icon: '⚙️', to: '/admin', tone: 'primary' },
-      { title: '个人中心', desc: '查看管理员账户信息', icon: '👤', to: '/profile', tone: 'violet' }
+      { title: '热力图统计', desc: '座位利用率 · 高峰时段', icon: 'analytics', to: '/analytics', tone: 'warm' },
+      { title: '管理端', desc: '自习室 · 座位 · 用户', icon: 'admin', to: '/admin', tone: 'primary' },
+      { title: '个人中心', desc: '查看管理员账户信息', icon: 'profile', to: '/profile', tone: 'violet' }
     ]
   : [
-      { title: '座位预约', desc: '手动选座 · 智能分配', icon: '🪑', to: '/booking', tone: 'primary' },
-      { title: '我的预约', desc: '签到 · 临时离开 · 签退', icon: '📑', to: '/mine', tone: 'success' },
-      { title: '我的候补', desc: '查看排队与递补状态', icon: '⏳', to: '/waitlist', tone: 'warm' },
-      { title: '消息中心', desc: '预约结果 · 违约警告 · 递补', icon: '🔔', to: '/notifications', tone: 'violet' }
+      { title: '座位预约', desc: '手动选座 · 智能分配', icon: 'booking', to: '/booking', tone: 'primary' },
+      { title: '我的预约', desc: '签到 · 临时离开 · 签退', icon: 'reservations', to: '/mine', tone: 'success' },
+      { title: '我的候补', desc: '查看排队与递补状态', icon: 'waitlist', to: '/waitlist', tone: 'warm' },
+      { title: '消息中心', desc: '预约结果 · 违约警告 · 递补', icon: 'notification', to: '/notifications', tone: 'violet' }
     ])
 const cardToneClass = {
   primary: 'tone-primary',
@@ -31,8 +32,10 @@ const cardToneClass = {
 </script>
 
 <template>
-  <!-- 首页：页面级双栏 -->
-  <div class="split home-split">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>首页</h1></header>
+    <!-- 首页：页面级双栏 -->
+    <div class="split home-split">
     <!-- 左栏：欢迎 + 账户 KPI + 快速贴士 -->
     <div class="split-left">
       <section class="card welcome-card">
@@ -134,12 +137,12 @@ const cardToneClass = {
             :class="cardToneClass[s.tone]"
             @click="router.push(s.to)"
           >
-            <div class="shortcut-icon">{{ s.icon }}</div>
+            <div class="shortcut-icon"><AppIcon :name="s.icon" :size="24" /></div>
             <div>
               <div class="shortcut-title">{{ s.title }}</div>
               <div class="shortcut-desc">{{ s.desc }}</div>
             </div>
-            <div class="chev">→</div>
+            <div class="chev"><AppIcon name="chevron-right" :size="18" /></div>
           </div>
         </div>
       </section>
@@ -185,6 +188,7 @@ const cardToneClass = {
           </div>
         </div>
       </section>
+    </div>
     </div>
   </div>
 </template>
@@ -331,5 +335,11 @@ const cardToneClass = {
   .shortcut-grid, .intro-grid {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 520px) {
+  .shortcut { grid-template-columns: 42px minmax(0, 1fr) 18px; padding: 13px; }
+  .shortcut-icon { width: 38px; height: 38px; }
+  .welcome-card .hello { align-items: flex-start; }
 }
 </style>

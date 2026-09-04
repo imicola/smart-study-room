@@ -4,6 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getRooms, getSeatMap } from '../api/room'
 import { createReservation, autoAllocate } from '../api/reservation'
 import { joinWaitlist } from '../api/waitlist'
+import AppIcon from '../components/AppIcon.vue'
 
 // ---- 条件区状态 ----
 const rooms = ref([])
@@ -57,7 +58,8 @@ async function loadSeatMap() {
 const gridStyle = computed(() => ({
   display: 'grid',
   gridTemplateColumns: `repeat(${room.value?.seat_cols || 8}, 1fr)`,
-  gap: '8px'
+  gap: '8px',
+  minWidth: `${Math.max(520, (room.value?.seat_cols || 8) * 50 + ((room.value?.seat_cols || 8) - 1) * 8 + 28)}px`
 }))
 
 function seatClass(s) {
@@ -175,11 +177,13 @@ onMounted(loadRooms)
 </script>
 
 <template>
-  <!-- 座位预约：页面级双栏 = 左筛选 | 右座位图 -->
-  <div class="split booking-split">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>座位预约</h1></header>
+    <!-- 座位预约：页面级双栏 = 左筛选 | 右座位图 -->
+    <div class="split booking-split">
     <!-- 左栏：筛选 + 智能分配 + 统计 + 图例 -->
     <div class="split-left">
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row">
           <h3>预约条件</h3>
         </div>
@@ -214,7 +218,7 @@ onMounted(loadRooms)
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row">
           <h3>实时数据</h3>
         </div>
@@ -238,15 +242,15 @@ onMounted(loadRooms)
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row">
           <h3>快捷操作</h3>
         </div>
         <div class="actions">
           <el-button type="primary" class="action-btn" @click="openAlloc">
-            ✨ 智能分配
+            <AppIcon name="sparkles" :size="17" />智能分配
           </el-button>
-          <el-button class="action-btn" @click="loadSeatMap">🔄 刷新座位图</el-button>
+          <el-button class="action-btn" @click="loadSeatMap"><AppIcon name="refresh" :size="17" />刷新座位图</el-button>
         </div>
         <div class="legend">
           <div class="legend-item"><span class="dot dot-free" /><span>空闲（可预约）</span></div>
@@ -269,6 +273,7 @@ onMounted(loadRooms)
           </div>
         </div>
 
+        <div class="responsive-scroll" tabindex="0" aria-label="座位平面图，可左右滑动">
         <div v-loading="loading" class="seat-grid-wrap">
           <div v-if="!room" class="empty-tip muted">请先在左侧选择自习室并设置预约条件</div>
           <div v-else :style="gridStyle" class="seat-grid">
@@ -279,23 +284,30 @@ onMounted(loadRooms)
             </el-tooltip>
           </div>
         </div>
+        </div>
       </section>
 
-      <!-- 已选座位操作条 -->
-      <section v-if="selected" class="card selected-card">
+      <!-- 已选座位操作条（常驻可见：未选座位时为提示态，提交按钮禁用） -->
+      <section class="card selected-card" :class="{ 'selected-card--empty': !selected }">
         <div class="sel-info">
-          <div class="sel-icon">🪑</div>
-          <div>
-            <div class="sel-title">
-              已选择 <b>{{ selected.seat_no }}</b>
-              <el-tag size="small" effect="plain">{{ zoneName[selected.zone] || selected.zone }}</el-tag>
-              <el-tag v-if="selected.has_power" size="small" type="success" effect="plain">电源</el-tag>
-              <el-tag v-if="selected.near_window" size="small" type="warning" effect="plain">靠窗</el-tag>
-            </div>
-            <div class="muted">{{ date.value }} · {{ start }} – {{ end }} · {{ room?.name }}</div>
+          <div class="sel-icon"><AppIcon name="seat" :size="27" /></div>
+          <div class="sel-detail">
+            <template v-if="selected">
+              <div class="sel-title">
+                已选择 <b>{{ selected.seat_no }}</b>
+                <el-tag size="small" effect="plain">{{ zoneName[selected.zone] || selected.zone }}</el-tag>
+                <el-tag v-if="selected.has_power" size="small" type="success" effect="plain">电源</el-tag>
+                <el-tag v-if="selected.near_window" size="small" type="warning" effect="plain">靠窗</el-tag>
+              </div>
+              <div class="muted">{{ date }} · {{ start }} – {{ end }} · {{ room?.name }}</div>
+            </template>
+            <template v-else>
+              <div class="sel-placeholder">请选择座位</div>
+              <div class="muted">点击座位平面图中可预约的座位后，再提交预约</div>
+            </template>
           </div>
         </div>
-        <el-button type="primary" size="large" @click="confirmBooking">提交预约</el-button>
+        <el-button type="primary" size="large" :disabled="!selected" @click="confirmBooking">提交预约</el-button>
       </section>
     </div>
   </div>
@@ -336,14 +348,15 @@ onMounted(loadRooms)
     </div>
 
     <template #footer>
-      <div style="display:flex; justify-content:space-between; align-items:center">
-        <el-button :loading="allocLoading" @click="runAllocate(false)">👀 仅推荐</el-button>
+      <div class="alloc-footer">
+        <el-button :loading="allocLoading" @click="runAllocate(false)"><AppIcon name="eye" :size="17" />仅推荐</el-button>
         <el-button type="primary" :loading="allocLoading" @click="runAllocate(true)">
-          ✨ 立即分配并下单
+          <AppIcon name="sparkles" :size="17" />立即分配并下单
         </el-button>
       </div>
     </template>
   </el-dialog>
+  </div>
 </template>
 
 <style scoped>
@@ -367,10 +380,15 @@ onMounted(loadRooms)
 .actions {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 10px;
   margin-bottom: 14px;
 }
-.action-btn { width: 100%; }
+.actions :deep(.el-button) {
+  width: 100%;
+  margin: 0;
+  justify-content: center;
+}
 
 .legend {
   display: grid;
@@ -480,6 +498,10 @@ onMounted(loadRooms)
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
+}
+.sel-detail {
+  min-width: 0;
 }
 .sel-icon {
   width: 48px; height: 48px; border-radius: 14px;
@@ -487,6 +509,7 @@ onMounted(loadRooms)
   display: grid; place-items: center;
   font-size: 22px;
   box-shadow: 0 2px 6px rgba(108,128,160,.08);
+  flex: 0 0 auto;
 }
 .sel-title {
   font-size: 15px;
@@ -495,6 +518,25 @@ onMounted(loadRooms)
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 2px;
+}
+/* 未选择座位：常驻提示态 */
+.selected-card--empty {
+  background: linear-gradient(135deg, #f8f9fc, #eef1f6);
+}
+.selected-card--empty .sel-icon {
+  background: #e7ebf1;
+  box-shadow: none;
+  filter: grayscale(.9);
+  opacity: .8;
+}
+.selected-card--empty .sel-detail .muted {
+  color: #b3bac6;
+}
+.sel-placeholder {
+  font-size: 15px;
+  font-weight: 600;
+  color: #9aa3b2;
   margin-bottom: 2px;
 }
 
@@ -547,5 +589,28 @@ onMounted(loadRooms)
 .rec-score {
   margin-top: 2px;
   font-size: 12px;
+}
+.alloc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .seat-grid-wrap { padding: 10px; }
+  .seat-grid { padding: 8px; }
+  .seat { border-radius: 6px; font-size: 10px; }
+  .selected-card { align-items: stretch; flex-direction: column; }
+  .selected-card :deep(.el-button) { width: 100%; }
+  .pref-checks { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .rec-item { grid-template-columns: 32px minmax(0, 1fr); }
+  .rec-item :deep(.el-button) { grid-column: 1 / -1; width: 100%; }
+  .seat-card { overflow: hidden; }
+  .seat-grid-wrap { min-width: max-content; }
+  .sel-info { min-width: 0; align-items: flex-start; }
+  .sel-title { flex-wrap: wrap; }
+  .alloc-footer { align-items: stretch; flex-direction: column; }
+  .alloc-footer :deep(.el-button) { width: 100%; margin-left: 0; }
 }
 </style>

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listMyWaitlist, cancelWaitlist } from '../api/waitlist'
+import AppIcon from '../components/AppIcon.vue'
 
 const list = ref([])
 const loading = ref(false)
@@ -52,21 +53,23 @@ const filtered = computed(() => {
   return list.value.filter((r) => r.status === filterStatus.value)
 })
 const nav = [
-  { key: 'all',       label: '全部候补', icon: '⏳' },
-  { key: 'waiting',   label: '排队中',   icon: '🟡' },
-  { key: 'promoted',  label: '已递补',   icon: '🟢' },
-  { key: 'expired',   label: '已过期',   icon: '⛔' },
-  { key: 'cancelled', label: '已取消',   icon: '↩️' }
+  { key: 'all',       label: '全部候补', icon: 'waitlist' },
+  { key: 'waiting',   label: '排队中',   icon: 'circle-wait' },
+  { key: 'promoted',  label: '已递补',   icon: 'circle-success' },
+  { key: 'expired',   label: '已过期',   icon: 'circle-muted' },
+  { key: 'cancelled', label: '已取消',   icon: 'circle-muted' }
 ]
 
 onMounted(load)
 </script>
 
 <template>
-  <div class="split wl-split">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>我的候补</h1></header>
+    <div class="split wl-split">
     <div class="split-left">
-      <section class="card">
-        <div class="card-title-row"><h3>候补概览</h3><el-button size="small" @click="load">🔄 刷新</el-button></div>
+      <section class="card responsive-compact">
+        <div class="card-title-row"><h3>候补概览</h3><el-button size="small" @click="load"><AppIcon name="refresh" :size="15" />刷新</el-button></div>
         <div class="kpi-grid">
           <div class="kpi"><div class="kpi-num">{{ buckets.all }}</div><div class="kpi-label">历史候补</div></div>
           <div class="kpi kpi-warn"><div class="kpi-num">{{ buckets.waiting }}</div><div class="kpi-label">正在排队</div></div>
@@ -75,7 +78,7 @@ onMounted(load)
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row"><h3>状态分类</h3></div>
         <div class="nav-list">
           <button
@@ -85,14 +88,14 @@ onMounted(load)
             :class="{ active: filterStatus === n.key }"
             @click="filterStatus = n.key"
           >
-            <span class="nav-icon">{{ n.icon }}</span>
+            <span class="nav-icon"><AppIcon :name="n.icon" :size="17" /></span>
             <span class="nav-label">{{ n.label }}</span>
             <span class="nav-count">{{ buckets[n.key] ?? 0 }}</span>
           </button>
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <h3>候补机制</h3>
         <ul class="tips">
           <li>提交候补时，系统会按<b>时间优先</b>记录位次</li>
@@ -111,7 +114,8 @@ onMounted(load)
         <el-alert type="info" :closable="false" style="margin-bottom: 14px"
           title="满座时段提交候补后，系统会在空位释放时自动按排队顺序递补，并通过站内消息通知您。" />
 
-        <el-table v-loading="loading" :data="filtered" stripe>
+        <div class="responsive-scroll" tabindex="0" aria-label="候补记录表格，可左右滑动">
+        <el-table v-loading="loading" :data="filtered" stripe class="waitlist-table">
           <el-table-column label="日期" width="110">
             <template #default="{ row }">{{ row.res_date }}</template>
           </el-table-column>
@@ -144,14 +148,17 @@ onMounted(load)
             </template>
           </el-table-column>
         </el-table>
+        </div>
         <el-empty v-if="!filtered.length && !loading" description="当前分类下暂无候补记录" />
       </section>
+    </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .wl-split { grid-template-columns: 300px 1fr; }
+.waitlist-table { min-width: 888px; }
 .kpi-warn .kpi-num { color: #d49a3a; }
 .kpi-ok   .kpi-num { color: #5fa655; }
 

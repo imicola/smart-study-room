@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login, register } from '../api/auth'
 import { useAuthStore } from '../stores/auth'
+import AppIcon from '../components/AppIcon.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -65,7 +66,7 @@ async function onRegister() {
 <template>
   <div class="login-wrap">
     <div class="login-card">
-      <h1 class="title">📚 智能共享自习室</h1>
+      <h1 class="title"><AppIcon name="book" :size="28" />智能共享自习室</h1>
       <p class="subtitle">座位预约 · 智能分配 · 信用治理</p>
 
       <el-tabs v-model="mode" stretch>
@@ -156,6 +157,10 @@ async function onRegister() {
   border: 1px solid rgba(255, 255, 255, 0.7);
 }
 .title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   text-align: center;
   margin: 0 0 4px;
   color: #303133;

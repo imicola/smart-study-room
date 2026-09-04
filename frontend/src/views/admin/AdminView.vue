@@ -5,6 +5,7 @@ import { getRooms, getSeatMap } from '../../api/room'
 import {
   createRoom, updateRoom, deleteRoom, batchGenSeats, updateSeat, listUsers, setUserStatus
 } from '../../api/admin'
+import AppIcon from '../../components/AppIcon.vue'
 
 const activeTab = ref('rooms')
 
@@ -128,8 +129,8 @@ onMounted(async () => {
 })
 
 const tabs = [
-  { key: 'rooms', label: '自习室管理', icon: '🏢' },
-  { key: 'users', label: '用户管理',   icon: '👥' }
+  { key: 'rooms', label: '自习室管理', icon: 'building' },
+  { key: 'users', label: '用户管理',   icon: 'users' }
 ]
 
 // 低饱和 tag 颜色（与 NotificationsView 同色系规范）
@@ -144,10 +145,12 @@ function creditColor(s) {
 </script>
 
 <template>
-  <div class="split admin-split">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>管理端</h1></header>
+    <div class="split admin-split">
     <!-- 左栏：导航 + 统计 + 快速操作 -->
     <div class="split-left">
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row">
           <h3>管理面板</h3>
           <span class="tag-role-admin tag-pill">管理员</span>
@@ -160,13 +163,13 @@ function creditColor(s) {
             :class="{ active: activeTab === t.key }"
             @click="activeTab = t.key"
           >
-            <span class="tab-icon">{{ t.icon }}</span>
+            <span class="tab-icon"><AppIcon :name="t.icon" :size="18" /></span>
             <span class="tab-label">{{ t.label }}</span>
           </button>
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row"><h3>运营统计</h3></div>
         <div class="kpi-grid">
           <div class="kpi">
@@ -188,14 +191,14 @@ function creditColor(s) {
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <h3>快速操作</h3>
         <div class="quick-actions">
           <el-button v-if="activeTab === 'rooms'" type="primary" class="qa-btn btn-grad-primary" @click="openCreate">
-            ➕ 新建自习室
+            <AppIcon name="add" :size="17" />新建自习室
           </el-button>
           <el-button class="qa-btn" @click="loadRooms(); loadUsers(); refreshStats()">
-            🔄 刷新数据
+            <AppIcon name="refresh" :size="17" />刷新数据
           </el-button>
         </div>
         <ul class="tips">
@@ -214,7 +217,8 @@ function creditColor(s) {
           <h3>自习室管理</h3>
           <el-button type="primary" class="btn-grad-primary" @click="openCreate">新建自习室</el-button>
         </div>
-        <el-table :data="rooms" stripe class="soft-table">
+        <div class="responsive-scroll" tabindex="0" aria-label="自习室管理表格，可左右滑动">
+        <el-table :data="rooms" stripe class="soft-table rooms-table">
           <el-table-column prop="id" label="ID" width="64" align="center" />
           <el-table-column prop="name" label="名称" min-width="140" />
           <el-table-column prop="location" label="位置" min-width="130" />
@@ -241,15 +245,17 @@ function creditColor(s) {
             </template>
           </el-table-column>
         </el-table>
+        </div>
       </section>
 
       <!-- 用户管理 -->
       <section v-if="activeTab === 'users'" class="card">
         <div class="card-title-row">
           <h3>用户管理</h3>
-          <el-button class="btn-soft" @click="loadUsers(); refreshStats()">🔄 刷新</el-button>
+          <el-button class="btn-soft" @click="loadUsers(); refreshStats()"><AppIcon name="refresh" :size="16" />刷新</el-button>
         </div>
-        <el-table :data="users" stripe class="soft-table">
+        <div class="responsive-scroll" tabindex="0" aria-label="用户管理表格，可左右滑动">
+        <el-table :data="users" stripe class="soft-table users-table">
           <el-table-column prop="id" label="ID" width="64" align="center" />
           <el-table-column prop="username" label="用户名" width="116" />
           <el-table-column prop="real_name" label="姓名"   width="104" />
@@ -289,6 +295,7 @@ function creditColor(s) {
             </template>
           </el-table-column>
         </el-table>
+        </div>
       </section>
     </div>
   </div>
@@ -334,10 +341,11 @@ function creditColor(s) {
   <!-- =============== 座位维护弹框 =============== -->
   <el-dialog v-model="seatDialog" :title="`座位维护 - ${seatRoom?.name || ''}`" width="820px" class="soft-dialog">
     <div class="seat-tip">
-      <span class="seat-tip-icon">ℹ️</span>
+      <span class="seat-tip-icon"><AppIcon name="info" :size="18" /></span>
       <span>点击右侧按钮切换座位状态，<b>维护中</b>的座位在学生端不可预约。</span>
     </div>
-    <el-table :data="seatList" stripe max-height="480" class="soft-table">
+    <div class="responsive-scroll" tabindex="0" aria-label="座位维护表格，可左右滑动">
+    <el-table :data="seatList" stripe max-height="480" class="soft-table seats-table">
       <el-table-column prop="seat_no" label="座位号" width="90" align="center" />
       <el-table-column label="坐标" width="90" align="center">
         <template #default="{ row }">
@@ -351,13 +359,13 @@ function creditColor(s) {
       </el-table-column>
       <el-table-column label="电源" width="72" align="center">
         <template #default="{ row }">
-          <span v-if="row.has_power" class="chip-ok">✔</span>
+          <span v-if="row.has_power" class="chip-ok"><AppIcon name="check" :size="16" /></span>
           <span v-else class="chip-no">—</span>
         </template>
       </el-table-column>
       <el-table-column label="靠窗" width="72" align="center">
         <template #default="{ row }">
-          <span v-if="row.near_window" class="chip-ok">✔</span>
+          <span v-if="row.near_window" class="chip-ok"><AppIcon name="check" :size="16" /></span>
           <span v-else class="chip-no">—</span>
         </template>
       </el-table-column>
@@ -380,11 +388,16 @@ function creditColor(s) {
         </template>
       </el-table-column>
     </el-table>
+    </div>
   </el-dialog>
+  </div>
 </template>
 
 <style scoped>
 .admin-split { grid-template-columns: 280px 1fr; }
+.rooms-table { min-width: 910px; }
+.users-table { min-width: 812px; }
+.seats-table { min-width: 678px; }
 .kpi-ok  .kpi-num { color: #6f9d66; }
 .kpi-bad .kpi-num { color: #c07474; }
 
@@ -469,7 +482,11 @@ function creditColor(s) {
 
 /* ===== 按钮：柔和 & 主按钮渐变（统一与 Booking 智能分配同质感） ===== */
 .quick-actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-.qa-btn { width: 100%; }
+.quick-actions :deep(.el-button) {
+  width: 100%;
+  margin: 0;
+  justify-content: center;
+}
 .btn-grad-primary {
   background: linear-gradient(135deg, #7e99ba 0%, #5f7ea3 100%) !important;
   border: none !important;
@@ -614,4 +631,25 @@ function creditColor(s) {
 }
 .seat-tip-icon { font-size: 16px; line-height: 1; margin-top: 1px; }
 .seat-tip b { color: #2f4462; font-weight: 600; }
+
+@media (max-width: 720px) {
+  .time-range,
+  .scale-range {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .time-arrow,
+  .scale-x { margin: 0; text-align: center; }
+  .dialog-footer { flex-wrap: wrap; }
+  .dialog-footer :deep(.el-button) { flex: 1; min-width: 110px; }
+  .seat-tip { padding: 10px 12px; }
+  .dialog-form :deep(.el-form-item) { display: block; }
+  .dialog-form :deep(.el-form-item__label) {
+    width: auto !important;
+    height: auto;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .dialog-form :deep(.el-form-item__content) { margin-left: 0 !important; }
+}
 </style>

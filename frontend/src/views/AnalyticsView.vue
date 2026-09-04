@@ -141,11 +141,13 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
 </script>
 
 <template>
-  <!-- 统计：页面级双栏 = 左 KPI/筛选 | 右热力图+图表 -->
-  <div class="split analytics-split">
+  <div class="page-view">
+    <header class="view-heading" data-page-title><h1>热力图与统计</h1></header>
+    <!-- 统计：页面级双栏 = 左 KPI/筛选 | 右热力图+图表 -->
+    <div class="split analytics-split">
     <!-- 左栏：概览 KPI + 筛选器 -->
     <div class="split-left">
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row"><h3>运营总览</h3></div>
         <div class="kpi-grid">
           <div v-if="overview" class="kpi">
@@ -167,7 +169,7 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row"><h3>热力图参数</h3></div>
         <div class="filter-group">
           <div class="filter-row">
@@ -186,7 +188,7 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
         </div>
       </section>
 
-      <section class="card">
+      <section class="card responsive-compact">
         <div class="card-title-row"><h3>指标说明</h3></div>
         <ul class="tips">
           <li><b>利用率</b>：实际占用小时数 ÷ 可开放小时数</li>
@@ -203,7 +205,9 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
           <h3>座位 × 时段 热力图</h3>
           <span class="muted">颜色越深 = 占用概率越高</span>
         </div>
-        <div ref="heatEl" class="chart chart-heat"></div>
+        <div class="responsive-scroll" tabindex="0" aria-label="座位时段热力图，可左右滑动">
+          <div ref="heatEl" class="chart chart-heat chart-wide"></div>
+        </div>
       </section>
 
       <section class="card">
@@ -216,8 +220,11 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
 
       <section class="card">
         <div class="card-title-row"><h3>热门座位 Top 10</h3></div>
-        <div ref="topEl" class="chart chart-bar"></div>
+        <div class="responsive-scroll" tabindex="0" aria-label="热门座位图，可左右滑动">
+          <div ref="topEl" class="chart chart-bar"></div>
+        </div>
       </section>
+    </div>
     </div>
   </div>
 </template>
@@ -246,7 +253,8 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
   height: 320px;
 }
 .chart-heat { height: 380px; }
-.chart-bar  { height: 340px; }
+.chart-wide { min-width: 720px; }
+.chart-bar  { min-width: 620px; height: 340px; }
 
 .charts-row {
   display: grid;
@@ -256,5 +264,11 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
 
 @media (max-width: 1100px) {
   .charts-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .chart { height: 280px; }
+  .chart-heat { height: 360px; }
+  .chart-bar { height: 340px; }
 }
 </style>
