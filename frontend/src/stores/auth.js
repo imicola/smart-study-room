@@ -8,7 +8,9 @@ export const useAuthStore = defineStore('auth', {
   }),
   getters: {
     isLoggedIn: (s) => !!s.token,
-    isAdmin: (s) => s.user?.role === 'admin'
+    isAdmin: (s) => s.user?.role === 'admin',
+    isStudent: (s) => s.user?.role === 'student',
+    roleHomePath: (s) => (s.user?.role === 'admin' ? '/admin' : '/')
   },
   actions: {
     setLogin({ token, user }) {

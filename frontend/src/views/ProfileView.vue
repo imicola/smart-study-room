@@ -19,13 +19,14 @@ const banned = computed(() => {
 })
 
 onMounted(async () => {
+  if (!auth.isStudent) return
   const resp = await getCreditOverview()
   overview.value = resp.data
 })
 </script>
 
 <template>
-  <div class="split profile-split">
+  <div class="split profile-split" :class="{ 'profile-admin': auth.isAdmin }">
     <div class="split-left">
       <!-- 用户卡片 -->
       <section class="card profile-card">
@@ -46,12 +47,13 @@ onMounted(async () => {
         <div class="card-title-row"><h3>基本信息</h3></div>
         <div class="info-row"><span>姓名</span><b>{{ auth.user?.real_name || '—' }}</b></div>
         <div class="info-row"><span>用户名</span><b>{{ auth.user?.username || '—' }}</b></div>
-        <div class="info-row"><span>学号</span><b>{{ auth.user?.student_no || '—' }}</b></div>
+        <div v-if="auth.isStudent" class="info-row"><span>学号</span><b>{{ auth.user?.student_no || '—' }}</b></div>
         <div class="info-row"><span>角色</span><b>{{ auth.isAdmin ? '管理员' : '学生' }}</b></div>
+        <div class="info-row"><span>账号状态</span><b>{{ auth.user?.status === 'active' ? '正常' : '已禁用' }}</b></div>
       </section>
 
       <!-- 信用卡 -->
-      <section class="card">
+      <section v-if="auth.isStudent" class="card">
         <div class="card-title-row"><h3>我的信用</h3></div>
         <div v-if="overview" class="credit-box">
           <el-progress type="dashboard" :percentage="overview.score" :color="scoreColor" :width="152">
@@ -76,7 +78,7 @@ onMounted(async () => {
       </section>
     </div>
 
-    <div class="split-right">
+    <div v-if="auth.isStudent" class="split-right">
       <section class="card">
         <div class="card-title-row">
           <h3>信用分流水</h3>
@@ -106,6 +108,10 @@ onMounted(async () => {
 
 <style scoped>
 .profile-split { grid-template-columns: 320px 1fr; }
+.profile-split.profile-admin {
+  grid-template-columns: minmax(320px, 520px);
+  justify-content: start;
+}
 
 .profile-card {
   text-align: center;

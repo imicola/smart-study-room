@@ -14,7 +14,7 @@ const unread = ref(0)
 let timer = null
 
 async function refreshUnread() {
-  if (!auth.isLoggedIn) return
+  if (!auth.isLoggedIn || !auth.isStudent) return
   try {
     const resp = await unreadCount()
     unread.value = resp.data?.count || 0
@@ -23,19 +23,21 @@ async function refreshUnread() {
 
 // 菜单：首页 / 预约 / 我的预约 / 候补 / 统计 / 消息 / 个人中心 / 管理端
 const menus = computed(() => {
-  const items = [
-    { index: '/',          title: '首页',     icon: '🏠' },
-    { index: '/booking',   title: '座位预约', icon: '🪑' },
-    { index: '/mine',      title: '我的预约', icon: '📑' },
-    { index: '/waitlist',  title: '我的候补', icon: '⏳' },
-    { index: '/analytics', title: '热力图统计', icon: '📊' },
-    { index: '/notifications', title: '消息中心', icon: '🔔' },
-    { index: '/profile',   title: '个人中心', icon: '👤' }
+  const common = [
+    { index: '/', title: '首页', icon: '🏠' }
   ]
-  if (auth.isAdmin) {
-    items.push({ index: '/admin', title: '管理端', icon: '⚙️' })
-  }
-  return items
+  const roleMenus = auth.isAdmin
+    ? [
+        { index: '/analytics', title: '热力图统计', icon: '📊' },
+        { index: '/admin', title: '管理端', icon: '⚙️' }
+      ]
+    : [
+        { index: '/booking', title: '座位预约', icon: '🪑' },
+        { index: '/mine', title: '我的预约', icon: '📑' },
+        { index: '/waitlist', title: '我的候补', icon: '⏳' },
+        { index: '/notifications', title: '消息中心', icon: '🔔' }
+      ]
+  return [...common, ...roleMenus, { index: '/profile', title: '个人中心', icon: '👤' }]
 })
 
 function handleSelect(index) {
@@ -55,10 +57,14 @@ const pageTitle = computed(() => {
 })
 
 onMounted(() => {
-  refreshUnread()
-  timer = setInterval(refreshUnread, 60000)
+  if (auth.isStudent) {
+    refreshUnread()
+    timer = setInterval(refreshUnread, 60000)
+  }
 })
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 </script>
 
 <template>
@@ -99,7 +105,7 @@ onUnmounted(() => clearInterval(timer))
 
       <!-- 底部：用户 + 通知 + 退出 -->
       <div class="sidebar-footer">
-        <router-link to="/notifications" class="footer-btn" title="消息中心">
+        <router-link v-if="auth.isStudent" to="/notifications" class="footer-btn" title="消息中心">
           <el-badge :value="unread" :hidden="unread === 0" :max="99">
             <span class="footer-btn-icon">🔔</span>
           </el-badge>

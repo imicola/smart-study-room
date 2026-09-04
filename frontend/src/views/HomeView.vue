@@ -8,13 +8,20 @@ const auth = useAuthStore()
 
 const who = computed(() => auth.user?.real_name || auth.user?.username || '同学')
 const roleText = computed(() => (auth.isAdmin ? '管理员' : '学生'))
+const helloText = computed(() => auth.isAdmin ? '欢迎回来，请查看今日运营情况' : '今天也要高效学习呀 ✨')
 
-const shortcuts = [
-  { title: '座位预约', desc: '手动选座 · 智能分配', icon: '🪑', to: '/booking', tone: 'primary' },
-  { title: '我的预约', desc: '签到 · 临时离开 · 签退', icon: '📑', to: '/mine', tone: 'success' },
-  { title: '热力图统计', desc: '座位利用率 · 高峰时段', icon: '📊', to: '/analytics', tone: 'warm' },
-  { title: '消息中心', desc: '预约结果 · 违约警告 · 递补', icon: '🔔', to: '/notifications', tone: 'violet' }
-]
+const shortcuts = computed(() => auth.isAdmin
+  ? [
+      { title: '热力图统计', desc: '座位利用率 · 高峰时段', icon: '📊', to: '/analytics', tone: 'warm' },
+      { title: '管理端', desc: '自习室 · 座位 · 用户', icon: '⚙️', to: '/admin', tone: 'primary' },
+      { title: '个人中心', desc: '查看管理员账户信息', icon: '👤', to: '/profile', tone: 'violet' }
+    ]
+  : [
+      { title: '座位预约', desc: '手动选座 · 智能分配', icon: '🪑', to: '/booking', tone: 'primary' },
+      { title: '我的预约', desc: '签到 · 临时离开 · 签退', icon: '📑', to: '/mine', tone: 'success' },
+      { title: '我的候补', desc: '查看排队与递补状态', icon: '⏳', to: '/waitlist', tone: 'warm' },
+      { title: '消息中心', desc: '预约结果 · 违约警告 · 递补', icon: '🔔', to: '/notifications', tone: 'violet' }
+    ])
 const cardToneClass = {
   primary: 'tone-primary',
   success: 'tone-success',
@@ -38,12 +45,12 @@ const cardToneClass = {
               </el-tag>
             </div>
             <h2 class="hello-name">你好，{{ who }}</h2>
-            <p class="hello-sub">今天也要高效学习呀 ✨</p>
+            <p class="hello-sub">{{ helloText }}</p>
           </div>
         </div>
       </section>
 
-      <section class="card">
+      <section v-if="auth.isStudent" class="card">
         <div class="card-title-row">
           <h3>账户概览</h3>
         </div>
@@ -67,13 +74,47 @@ const cardToneClass = {
         </div>
       </section>
 
-      <section class="card tips-card">
+      <section v-else class="card">
+        <div class="card-title-row">
+          <h3>管理概览</h3>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-num">3</div>
+            <div class="kpi-label">自习室</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-num">158</div>
+            <div class="kpi-label">座位总数</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-num">2</div>
+            <div class="kpi-label">管理模块</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-num">08:00<br/><span style="font-size:11px;font-weight:500">~ 22:00</span></div>
+            <div class="kpi-label">今日开放</div>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="auth.isStudent" class="card tips-card">
         <h3>使用小贴士</h3>
         <ul class="tips">
           <li>距开始不足 30 分钟取消预约将扣 <b>2 分</b>信用分</li>
           <li>超时未签到会自动记为违约，扣 <b>8 分</b>，并释放座位</li>
           <li>满座时段可加入 <b>候补</b>，空位释放时按序自动递补</li>
           <li>信用分低于 60，<b>3 天内</b>无法发起新预约</li>
+        </ul>
+      </section>
+
+      <section v-else class="card tips-card">
+        <h3>管理提示</h3>
+        <ul class="tips">
+          <li>定期检查自习室开放时间与座位规模是否准确</li>
+          <li>维护中的座位不会开放给普通用户预约</li>
+          <li>可在用户管理中启用或禁用普通用户账号</li>
+          <li>通过热力图了解座位利用率和高峰时段</li>
         </ul>
       </section>
     </div>
@@ -107,7 +148,7 @@ const cardToneClass = {
         <div class="card-title-row">
           <h3>系统介绍</h3>
         </div>
-        <div class="intro-grid">
+        <div v-if="auth.isStudent" class="intro-grid">
           <div class="intro-cell">
             <div class="intro-label">在线预约</div>
             <div class="intro-text">平面图可视化选座，时段冲突自动检测，支持签到 / 临时离开 / 签退全生命周期。</div>
@@ -117,12 +158,30 @@ const cardToneClass = {
             <div class="intro-text">按区域、电源、靠窗偏好加权评分，一键推荐最优座位或直接自动下单。</div>
           </div>
           <div class="intro-cell">
-            <div class="intro-label">热力分析</div>
-            <div class="intro-text">座位×小时占用热力图、近14天趋势、高峰时段、热门座位 Top10 可视化。</div>
+            <div class="intro-label">候补递补</div>
+            <div class="intro-text">满座时加入候补队列，空位释放后按排队顺序自动递补并发送通知。</div>
           </div>
           <div class="intro-cell">
             <div class="intro-label">信用治理</div>
             <div class="intro-text">违约扣分、履约加分、低分限约，配合满座候补递补机制，公平利用座位资源。</div>
+          </div>
+        </div>
+        <div v-else class="intro-grid">
+          <div class="intro-cell">
+            <div class="intro-label">资源管理</div>
+            <div class="intro-text">维护自习室名称、位置、开放时间和座位规模，统一管理可预约资源。</div>
+          </div>
+          <div class="intro-cell">
+            <div class="intro-label">座位维护</div>
+            <div class="intro-text">批量生成座位并维护座位属性与状态，确保不可用座位及时下线。</div>
+          </div>
+          <div class="intro-cell">
+            <div class="intro-label">用户管理</div>
+            <div class="intro-text">查看普通用户信息与信用状态，并按需启用或禁用用户账号。</div>
+          </div>
+          <div class="intro-cell">
+            <div class="intro-label">运营分析</div>
+            <div class="intro-text">查看座位利用率和时段热力分布，为资源配置与开放安排提供参考。</div>
           </div>
         </div>
       </section>
