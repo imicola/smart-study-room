@@ -125,14 +125,35 @@ async function onRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* 同色系(hue≈215°雾霾蓝灰) + 低饱和(22%~30%)渐变：仅靠明度变化营造层次 */
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(135deg, #eff3f8 0%, #dce4ee 55%, #bfcbdc 100%);
+  position: relative;
+  overflow: hidden;
+}
+.login-wrap::before {
+  /* 极淡的同色系柔光叠加，增加呼吸感 */
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 80% 85%, rgba(180, 198, 220, 0.45), transparent 50%);
+  filter: blur(20px);
+  pointer-events: none;
 }
 .login-card {
+  position: relative;
   width: 400px;
-  background: #fff;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(140%) blur(8px);
+  border-radius: 14px;
   padding: 32px 36px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  /* 阴影改用同色系冷灰，低饱和背景下更和谐 */
+  box-shadow:
+    0 1px 2px rgba(108, 128, 160, 0.06),
+    0 12px 40px rgba(108, 128, 160, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.7);
 }
 .title {
   text-align: center;
