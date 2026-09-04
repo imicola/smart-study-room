@@ -156,7 +156,7 @@ onMounted(load)
         </div>
 
         <div class="responsive-scroll" tabindex="0" aria-label="预约记录表格，可左右滑动">
-        <el-table v-loading="loading" :data="filtered" stripe class="mine-table">
+        <el-table v-loading="loading" :data="filtered" stripe class="mine-table" max-height="560">
           <el-table-column label="日期" width="110">
             <template #default="{ row }">{{ row.res_date }}</template>
           </el-table-column>

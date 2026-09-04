@@ -218,7 +218,7 @@ function creditColor(s) {
           <el-button type="primary" class="btn-grad-primary" @click="openCreate">新建自习室</el-button>
         </div>
         <div class="responsive-scroll" tabindex="0" aria-label="自习室管理表格，可左右滑动">
-        <el-table :data="rooms" stripe class="soft-table rooms-table">
+        <el-table :data="rooms" stripe class="soft-table rooms-table" max-height="560">
           <el-table-column prop="id" label="ID" width="64" align="center" />
           <el-table-column prop="name" label="名称" min-width="140" />
           <el-table-column prop="location" label="位置" min-width="130" />
@@ -255,7 +255,7 @@ function creditColor(s) {
           <el-button class="btn-soft" @click="loadUsers(); refreshStats()"><AppIcon name="refresh" :size="16" />刷新</el-button>
         </div>
         <div class="responsive-scroll" tabindex="0" aria-label="用户管理表格，可左右滑动">
-        <el-table :data="users" stripe class="soft-table users-table">
+        <el-table :data="users" stripe class="soft-table users-table" max-height="560">
           <el-table-column prop="id" label="ID" width="64" align="center" />
           <el-table-column prop="username" label="用户名" width="116" />
           <el-table-column prop="real_name" label="姓名"   width="104" />

@@ -190,6 +190,14 @@ onMounted(load)
 .list {
   display: flex; flex-direction: column; gap: 4px;
 }
+/* PC 宽屏：消息列表在右栏卡内纵向滚动，右栏高度可控 */
+@media (min-width: 1025px) {
+  .list {
+    min-height: 0;
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+  }
+}
 .msg-item {
   display: grid;
   grid-template-columns: 88px 1fr auto;

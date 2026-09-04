@@ -213,6 +213,36 @@ body,
   }
 }
 
+/* PC 宽屏：左右栏底部对齐 —— 右栏首卡吸收剩余高度(等效 min-height 与左栏对齐，内容多时可更高)，
+   左栏卡片保持自然高度不被拉伸(列被拉高时仅底部留白) */
+@media (min-width: 1025px) {
+  .split,
+  .split.home-split,
+  .split.booking-split,
+  .split.mine-split,
+  .split.wl-split,
+  .split.analytics-split,
+  .split.notif-split,
+  .split.profile-split,
+  .split.profile-split.profile-admin,
+  .split.admin-split,
+  .page-view .split.home-split,
+  .page-view .split.booking-split,
+  .page-view .split.mine-split,
+  .page-view .split.wl-split,
+  .page-view .split.analytics-split,
+  .page-view .split.notif-split,
+  .page-view .split.profile-split,
+  .page-view .split.profile-split.profile-admin,
+  .page-view .split.admin-split {
+    align-items: stretch;
+  }
+  .split-right > .card:first-child,
+  .split-right > .page-card:first-child {
+    flex: 1;
+  }
+}
+
 @media (max-width: 1024px) {
   .page-view {
     padding: 82px 16px 20px;

@@ -115,7 +115,7 @@ onMounted(load)
           title="满座时段提交候补后，系统会在空位释放时自动按排队顺序递补，并通过站内消息通知您。" />
 
         <div class="responsive-scroll" tabindex="0" aria-label="候补记录表格，可左右滑动">
-        <el-table v-loading="loading" :data="filtered" stripe class="waitlist-table">
+        <el-table v-loading="loading" :data="filtered" stripe class="waitlist-table" max-height="560">
           <el-table-column label="日期" width="110">
             <template #default="{ row }">{{ row.res_date }}</template>
           </el-table-column>
