@@ -1,6 +1,7 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
+import HeaderPanel from './HeaderPanel.vue'
 
 const props = defineProps({
   sidebarCollapsed: { type: Boolean, default: true },
@@ -12,18 +13,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['open-sidebar', 'navigate'])
-const isQuickMenuOpen = ref(false)
+const quickMenu = ref(null)
+const isMenuOpen = ref(false)
 
 const quickMenus = computed(() => props.menus.filter((item) => item.index !== props.currentPath))
-const menuHeight = computed(() => 58 + quickMenus.value.length * 44 + 10)
 
 function closeQuickMenu() {
-  isQuickMenuOpen.value = false
+  quickMenu.value?.close()
 }
 
-function toggleQuickMenu() {
-  isQuickMenuOpen.value = !isQuickMenuOpen.value
-}
 
 function openSidebar() {
   closeQuickMenu()
@@ -35,22 +33,18 @@ function navigate(path) {
   emit('navigate', path)
 }
 
-function onKeydown(event) {
-  if (event.key === 'Escape' && isQuickMenuOpen.value) closeQuickMenu()
-}
 
 watch(() => props.currentPath, closeQuickMenu)
 watch(() => props.sidebarCollapsed, (collapsed) => {
   if (!collapsed) closeQuickMenu()
 })
 
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
   <header
     class="mobile-topbar"
+    :class="{ 'has-expanded-panel': isMenuOpen }"
     :style="{
       '--title-progress': Math.max(0, Math.min(1, titleProgress)),
       '--title-offset': `${(1 - Math.max(0, Math.min(1, titleProgress))) * 10}px`
@@ -74,50 +68,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
       {{ pageTitle }}
     </div>
 
-    <div
-      v-if="isQuickMenuOpen"
-      class="quick-menu-dismiss"
-      aria-hidden="true"
-      @click="closeQuickMenu"
-    />
-
-    <section
-      class="quick-menu-shell"
-      :class="{ expanded: isQuickMenuOpen, 'at-top': atTop && !isQuickMenuOpen }"
-      :style="{ '--quick-menu-height': `${menuHeight}px` }"
-      aria-label="全部页面快捷导航"
-    >
-      <button
-        type="button"
-        class="quick-menu-trigger"
-        :class="{ active: isQuickMenuOpen }"
-        :aria-label="isQuickMenuOpen ? '收起快捷导航' : '展开快捷导航'"
-        :title="isQuickMenuOpen ? '收起快捷导航' : '更多'"
-        :aria-expanded="isQuickMenuOpen"
-        @click="toggleQuickMenu"
-      >
-        <span class="quick-menu-trigger-icon">
-          <AppIcon name="more" :size="21" />
-        </span>
-      </button>
-
-      <div class="quick-menu-content" :aria-hidden="!isQuickMenuOpen">
-        <div class="quick-menu-title">快捷导航</div>
-        <nav class="quick-menu-list">
-          <button
-            v-for="item in quickMenus"
-            :key="item.index"
-            type="button"
-            class="quick-menu-item"
-            :tabindex="isQuickMenuOpen ? 0 : -1"
-            @click="navigate(item.index)"
-          >
-            <span class="quick-menu-icon"><AppIcon :name="item.icon" :size="19" /></span>
-            <span>{{ item.title }}</span>
-          </button>
-        </nav>
-      </div>
-    </section>
+    <HeaderPanel ref="quickMenu" title="快捷导航" icon="more" :width="228" @toggle="isMenuOpen = $event">
+      <nav class="quick-menu-list">
+        <button v-for="item in quickMenus" :key="item.index" type="button" class="quick-menu-item" @click="navigate(item.index)">
+          <span class="quick-menu-icon"><AppIcon :name="item.icon" :size="19" /></span>
+          <span>{{ item.title }}</span>
+        </button>
+      </nav>
+    </HeaderPanel>
   </header>
 </template>
 
@@ -135,6 +93,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   border: 0;
   box-shadow: none;
   pointer-events: none;
+}
+.mobile-topbar.has-expanded-panel,
+.mobile-topbar:has(.is-expanded) {
+  z-index: 35;
 }
 .mobile-topbar::before {
   content: '';
@@ -161,7 +123,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   z-index: 2;
   left: 50%;
   top: 18px;
-  max-width: calc(100vw - 144px);
+  max-width: calc(100vw - 226px);
   overflow: hidden;
   color: var(--text-1);
   font-size: 21px;
@@ -174,8 +136,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   pointer-events: none;
   will-change: transform, opacity;
 }
-.topbar-action,
-.quick-menu-shell:not(.expanded) {
+.topbar-action {
   border: 0;
   background: transparent;
   color: var(--text-2);
@@ -195,14 +156,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   pointer-events: auto;
   transition: color .16s ease, background .16s ease;
 }
-.topbar-action:hover,
-.quick-menu-shell:not(.expanded):hover,
-.quick-menu-trigger:hover {
+.topbar-action:hover {
   color: var(--text-1);
   background: rgba(28, 37, 52, .06);
 }
 .topbar-action:focus-visible,
-.quick-menu-trigger:focus-visible,
 .quick-menu-item:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
@@ -211,89 +169,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   width: 42px;
   height: 42px;
 }
-.quick-menu-dismiss {
-  position: fixed;
-  z-index: 1;
-  inset: 0;
-  pointer-events: auto;
-  background: transparent;
-}
-.quick-menu-shell {
-  position: relative;
-  z-index: 3;
-  width: 42px;
-  height: 42px;
-  max-width: calc(100vw - 32px);
-  max-height: calc(100vh - 22px);
-  border-radius: 50%;
-  overflow: hidden;
-  pointer-events: auto;
-  transform-origin: top right;
-  transition: width .24s ease, height .24s ease, border-radius .24s ease, border-color .16s ease, background .16s ease;
-}
-.quick-menu-shell.expanded {
-  width: 228px;
-  height: var(--quick-menu-height);
-  border-radius: var(--r-xl);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: var(--shadow-3);
-}
-.quick-menu-trigger {
-  appearance: none;
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  right: 0;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: inherit;
-  background: transparent;
-  cursor: pointer;
-}
-.quick-menu-trigger-icon {
-  display: grid;
-  place-items: center;
-  transform: rotate(-90deg);
-  transition: transform .26s cubic-bezier(0.34, 1.3, 0.64, 1);
-  will-change: transform;
-}
-.quick-menu-trigger.active .quick-menu-trigger-icon {
-  transform: rotate(0deg);
-}
-.quick-menu-content {
-  height: 100%;
-  padding: 13px 8px 8px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-5px);
-  transition: opacity .13s ease, transform .2s ease, visibility 0s linear .24s;
-}
-.quick-menu-shell.expanded .quick-menu-content {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  transition: opacity .18s ease .08s, transform .2s ease .04s, visibility 0s linear 0s;
-}
-.quick-menu-title {
-  height: 34px;
-  padding: 3px 44px 0 8px;
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 650;
-  color: var(--text-1);
-  white-space: nowrap;
-}
 .quick-menu-list {
-  max-height: calc(100% - 34px);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 2px;

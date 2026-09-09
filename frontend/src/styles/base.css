@@ -69,11 +69,7 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
-@media (hover: none) and (pointer: coarse) {
-  :focus-visible {
-    outline: none !important;
-  }
-}
+
 
 ::selection {
   background: var(--primary-weak);

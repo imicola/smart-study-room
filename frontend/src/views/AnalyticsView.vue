@@ -1,4 +1,6 @@
 <script setup>
+import PageHelp from '../components/PageHelp.vue'
+import SAnimatedNumber from '../components/ui/SAnimatedNumber.vue'
 import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import { getRooms } from '../api/room'
@@ -8,6 +10,15 @@ import SSelect from '../components/ui/SSelect.vue'
 import SDatePicker from '../components/ui/SDatePicker.vue'
 
 const themeStore = useThemeStore()
+const chartTab = ref('heat')
+const chartRoot = ref(null)
+const chartTabs = [{ key: 'heat', label: '座位热力图' }, { key: 'trend', label: '运营趋势' }, { key: 'top', label: '热门座位' }]
+let resizeObserver
+let disposed = false
+let heatRequest = 0
+let overviewRequest = 0
+const motionMedia = window.matchMedia('(prefers-reduced-motion: reduce)')
+const animateCharts = () => !motionMedia.matches
 
 const rooms = ref([])
 const roomId = ref(null)
@@ -41,9 +52,11 @@ const CHART = computed(() => {
 
 async function loadHeatmap() {
   if (!roomId.value) return
+  const request = ++heatRequest
   const resp = await getHeatmap(roomId.value, date.value)
+  if (disposed || request !== heatRequest) return
   const d = resp.data
-  if (!heatChart) heatChart = echarts.init(heatEl.value)
+  if (!heatChart) heatChart = echarts.init(heatEl.value, null, { width: heatEl.value.clientWidth || 720, height: heatEl.value.clientHeight || 380 })
   const c = CHART.value
 
   const data = []
@@ -51,6 +64,7 @@ async function loadHeatmap() {
     d.cells[i].forEach((v, j) => data.push([j, i, v]))
   })
   heatChart.setOption({
+    animation: animateCharts(), animationDuration: 450, animationDurationUpdate: 250,
     tooltip: {
       position: 'top',
       backgroundColor: c.tooltipBg,
@@ -80,14 +94,18 @@ async function loadHeatmap() {
 }
 
 async function loadOverview() {
+  const request = ++overviewRequest
   const resp = await getOverview()
+  if (disposed || request !== overviewRequest) return
   overview.value = resp.data
   const d = resp.data
   await nextTick()
+  if (disposed) return
   const c = CHART.value
 
-  if (!trendChart) trendChart = echarts.init(trendEl.value)
+  if (!trendChart) trendChart = echarts.init(trendEl.value, null, { width: trendEl.value.clientWidth || 500, height: 320 })
   trendChart.setOption({
+    animation: animateCharts(), animationDuration: 450, animationDurationUpdate: 250,
     title: { text: '近 14 天使用率趋势', left: 'center', textStyle: { fontSize: 13, color: c.title, fontWeight: 600 } },
     grid: { top: 40, left: 50, right: 20, bottom: 30 },
     tooltip: {
@@ -112,8 +130,9 @@ async function loadOverview() {
     }]
   })
 
-  if (!peakChart) peakChart = echarts.init(peakEl.value)
+  if (!peakChart) peakChart = echarts.init(peakEl.value, null, { width: peakEl.value.clientWidth || 500, height: 320 })
   peakChart.setOption({
+    animation: animateCharts(), animationDuration: 450, animationDurationUpdate: 250,
     title: { text: '高峰时段分布（近 14 天）', left: 'center', textStyle: { fontSize: 13, color: c.title, fontWeight: 600 } },
     grid: { top: 40, left: 50, right: 20, bottom: 30 },
     tooltip: { trigger: 'axis', backgroundColor: c.tooltipBg, borderColor: c.axisLine, borderWidth: 1, textStyle: { color: '#fff', fontSize: 12 } },
@@ -131,9 +150,10 @@ async function loadOverview() {
     }]
   })
 
-  if (!topChart) topChart = echarts.init(topEl.value)
+  if (!topChart) topChart = echarts.init(topEl.value, null, { width: topEl.value.clientWidth || 720, height: 340 })
   const tops = [...d.top_seats].reverse()
   topChart.setOption({
+    animation: animateCharts(), animationDuration: 450, animationDurationUpdate: 250,
     title: { text: '热门座位 Top 10', left: 'center', textStyle: { fontSize: 13, color: c.title, fontWeight: 600 } },
     grid: { top: 40, left: 130, right: 40, bottom: 30 },
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: c.tooltipBg, borderColor: c.axisLine, borderWidth: 1, textStyle: { color: '#fff', fontSize: 12 } },
@@ -161,6 +181,7 @@ watch(() => themeStore.resolvedTheme, () => {
 
 async function init() {
   const resp = await getRooms()
+  if (disposed) return
   rooms.value = resp.data || []
   if (rooms.value.length) roomId.value = rooms.value[0].id
   await Promise.all([loadHeatmap(), loadOverview()])
@@ -169,22 +190,43 @@ async function init() {
 watch([roomId, date], loadHeatmap)
 
 function resizeAll() {
-  heatChart?.resize(); trendChart?.resize(); peakChart?.resize(); topChart?.resize()
+  for (const chart of [heatChart, trendChart, peakChart, topChart]) {
+    if (chart && chart.getDom().clientWidth) chart.resize()
+  }
 }
 
+watch(chartTab, async () => { await nextTick(); resizeAll() })
+function syncMotion() {
+  for (const chart of [heatChart, trendChart, peakChart, topChart]) chart?.setOption({ animation: animateCharts() })
+}
 onMounted(() => {
+  resizeObserver = new ResizeObserver(resizeAll)
+  resizeObserver.observe(chartRoot.value)
+  motionMedia.addEventListener('change', syncMotion)
   init()
   window.addEventListener('resize', resizeAll)
 })
-onUnmounted(() => window.removeEventListener('resize', resizeAll))
+onUnmounted(() => {
+  disposed = true
+  resizeObserver?.disconnect()
+  motionMedia.removeEventListener('change', syncMotion)
+  window.removeEventListener('resize', resizeAll)
+  for (const chart of [heatChart, trendChart, peakChart, topChart]) chart?.dispose()
+})
 </script>
 
 <template>
-  <div class="page-view">
-    <header class="view-heading" data-page-title>
+  <div v-reveal class="page-view">
+    <header class="view-heading has-page-help"><div class="heading-copy" data-page-title>
       <h1>热力图与统计</h1>
       <p class="heading-sub">座位利用率、高峰时段与热门座位分析</p>
-    </header>
+    </div><PageHelp title="指标说明">
+        <ul class="tips">
+          <li><b>利用率</b>：实际占用小时数 ÷ 可开放小时数</li>
+          <li><b>高峰时段</b>：近 14 天按时段聚合的预约数 Top</li>
+          <li><b>热门座位</b>：近 14 天累计占用小时数 Top 10</li>
+        </ul>
+      </PageHelp></header>
     <!-- 统计：页面级双栏 = 左 KPI/筛选 | 右热力图+图表 -->
     <div class="split analytics-split">
     <!-- 左栏：概览 KPI + 筛选器 -->
@@ -193,15 +235,15 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
         <div class="card-title-row"><h3>运营总览</h3></div>
         <div class="kpi-grid">
           <div v-if="overview" class="kpi">
-            <div class="kpi-num">{{ overview.total_seats }}</div>
+            <div class="kpi-num"><SAnimatedNumber :value="overview.total_seats" /></div>
             <div class="kpi-label">总座位数</div>
           </div>
           <div v-if="overview" class="kpi kpi-ok">
-            <div class="kpi-num">{{ overview.active_today }}</div>
+            <div class="kpi-num"><SAnimatedNumber :value="overview.active_today" /></div>
             <div class="kpi-label">今日预约</div>
           </div>
           <div v-if="overview" class="kpi kpi-primary">
-            <div class="kpi-num">{{ overview.in_use_now }}</div>
+            <div class="kpi-num"><SAnimatedNumber :value="overview.in_use_now" /></div>
             <div class="kpi-label">当前使用中</div>
           </div>
           <div v-if="overview" class="kpi kpi-warm">
@@ -228,19 +270,15 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
         </div>
       </section>
 
-      <section class="card responsive-compact">
-        <div class="card-title-row"><h3>指标说明</h3></div>
-        <ul class="tips">
-          <li><b>利用率</b>：实际占用小时数 ÷ 可开放小时数</li>
-          <li><b>高峰时段</b>：近 14 天按时段聚合的预约数 Top</li>
-          <li><b>热门座位</b>：近 14 天累计占用小时数 Top 10</li>
-        </ul>
-      </section>
+      
     </div>
 
     <!-- 右栏：热力图 + 图表 -->
-    <div class="split-right">
-      <section class="card">
+    <div ref="chartRoot" class="split-right">
+      <nav class="chart-tabs" aria-label="统计视图">
+        <button v-for="tab in chartTabs" :key="tab.key" type="button" :class="{ active: chartTab === tab.key }" :aria-pressed="chartTab === tab.key" @click="chartTab = tab.key">{{ tab.label }}</button>
+      </nav>
+      <section v-show="chartTab === 'heat'" class="card chart-panel">
         <div class="card-title-row">
           <h3>座位 × 时段 热力图</h3>
           <span class="muted">颜色越深 = 占用概率越高</span>
@@ -250,7 +288,7 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
         </div>
       </section>
 
-      <section class="card">
+      <section v-show="chartTab === 'trend'" class="card chart-panel">
         <div class="card-title-row"><h3>近 14 天运营趋势</h3></div>
         <div class="charts-row">
           <div ref="trendEl" class="chart"></div>
@@ -258,7 +296,7 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
         </div>
       </section>
 
-      <section class="card">
+      <section v-show="chartTab === 'top'" class="card chart-panel">
         <div class="card-title-row"><h3>热门座位 Top 10</h3></div>
         <div class="responsive-scroll" tabindex="0" aria-label="热门座位图，可左右滑动">
           <div ref="topEl" class="chart chart-bar"></div>
@@ -270,7 +308,7 @@ onUnmounted(() => window.removeEventListener('resize', resizeAll))
 </template>
 
 <style scoped>
-.analytics-split { grid-template-columns: 300px 1fr; }
+
 
 .chart {
   width: 100%;

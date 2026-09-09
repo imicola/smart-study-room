@@ -1,4 +1,5 @@
 <script setup>
+import { pageMotion } from '../composables/motion'
 import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { gsap } from 'gsap'
@@ -242,7 +243,7 @@ onUnmounted(() => {
       </div>
 
       <!-- 菜单（加大尺寸） -->
-      <nav class="menu" aria-label="主导航">
+      <nav v-active-track class="menu" aria-label="主导航">
         <button
           v-for="m in menus"
           :key="m.index"
@@ -341,7 +342,11 @@ onUnmounted(() => {
     <section ref="contentRef" class="content" @scroll="onContentScroll">
       <!-- 每个页面自行使用 .split 实现"页面级双栏" -->
       <main class="page-body">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <Transition :css="false" mode="out-in" @enter="pageMotion.enter" @leave="pageMotion.leave" @enter-cancelled="pageMotion.cancel" @leave-cancelled="pageMotion.cancel" @after-enter="setupMobileTitleAnimation">
+            <div :key="route.path" class="route-surface"><component :is="Component" /></div>
+          </Transition>
+        </router-view>
       </main>
     </section>
     <AIAssistant v-if="auth.isLoggedIn && auth.isStudent" />
@@ -353,7 +358,7 @@ onUnmounted(() => {
 .shell {
   height: 100%;
   display: grid;
-  grid-template-columns: 256px 1fr;
+  grid-template-columns: 216px minmax(0, 1fr);
   background: var(--canvas);
   transition: grid-template-columns var(--dur-3) var(--ease);
 }
@@ -372,7 +377,7 @@ onUnmounted(() => {
 .sidebar {
   display: flex;
   flex-direction: column;
-  background: var(--surface);
+  background: var(--canvas);
   border-right: 1px solid var(--border);
   padding: 16px 12px 12px;
   min-height: 0;

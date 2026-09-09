@@ -73,7 +73,7 @@ const features = [
 </script>
 
 <template>
-  <div class="auth-shell">
+  <div v-reveal class="auth-shell">
     <!-- ============ 左侧：品牌叙事 ============ -->
     <aside class="auth-hero">
       <div class="hero-brand">
@@ -84,7 +84,7 @@ const features = [
         </div>
       </div>
 
-      <div class="hero-body">
+      <div class="hero-body"><div class="study-art" aria-hidden="true"><span/><span/><span/></div>
         <h1 class="hero-title">让每一次自习<br />都有理想的位置</h1>
         <p class="hero-desc">座位预约 · 智能分配 · 信用治理 —— 面向校园的一站式自习室数字化系统。</p>
 
@@ -104,8 +104,8 @@ const features = [
 
     <!-- ============ 右侧：登录 / 注册 ============ -->
     <main class="auth-panel">
-      <div class="auth-card">
-        <div class="seg seg-block" role="tablist" aria-label="登录或注册">
+      <div class="auth-card"><header class="auth-heading"><h2>{{ mode === 'login' ? '欢迎回来' : '开启专注时光' }}</h2><p>为今天的学习，留一个好位置。</p></header>
+        <div v-active-track class="seg seg-block" role="tablist" aria-label="登录或注册">
           <button
             class="seg-btn"
             role="tab"

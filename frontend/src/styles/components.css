@@ -8,8 +8,8 @@
   min-width: 0;
   min-height: 100%;
   /* 底部留白：为右下角 AI 助手悬浮球让位，避免遮挡页面末端内容 */
-  padding: 26px 28px 92px;
-  max-width: 1440px;
+  padding: 24px 32px 76px;
+  max-width: 1720px;
   margin: 0 auto;
 }
 
@@ -54,7 +54,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
-  padding: 20px 22px;
+  padding: 18px 20px;
   box-shadow: var(--shadow-1);
 }
 
@@ -86,7 +86,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
-  padding: 20px 22px;
+  padding: 18px 20px;
   box-shadow: var(--shadow-1);
 }
 
@@ -247,7 +247,7 @@
 .table-scroll:has(> .empty-state) {
   display: grid;
   place-items: center;
-  min-height: 300px;
+  min-height: 180px;
   box-shadow: none;
 }
 
@@ -542,153 +542,3 @@ table.table {
   to { opacity: 1; }
 }
 
-/* =============== 响应式：与原版断点行为一致 =============== */
-@media (max-width: 1280px) {
-  .split,
-  .split.home-split,
-  .split.booking-split,
-  .split.mine-split,
-  .split.wl-split,
-  .split.analytics-split,
-  .split.notif-split,
-  .split.profile-split,
-  .split.admin-split {
-    grid-template-columns: minmax(260px, 28%) minmax(0, 1fr);
-    gap: 16px;
-  }
-  .page-view .split.home-split,
-  .page-view .split.booking-split,
-  .page-view .split.mine-split,
-  .page-view .split.wl-split,
-  .page-view .split.analytics-split,
-  .page-view .split.notif-split,
-  .page-view .split.profile-split,
-  .page-view .split.admin-split {
-    grid-template-columns: minmax(260px, 28%) minmax(0, 1fr);
-  }
-}
-
-/* PC 宽屏：右栏首卡吸收剩余高度 */
-@media (min-width: 1025px) {
-  .split,
-  .split.home-split,
-  .split.booking-split,
-  .split.mine-split,
-  .split.wl-split,
-  .split.analytics-split,
-  .split.notif-split,
-  .split.profile-split,
-  .split.profile-split.profile-admin,
-  .split.admin-split,
-  .page-view .split.home-split,
-  .page-view .split.booking-split,
-  .page-view .split.mine-split,
-  .page-view .split.wl-split,
-  .page-view .split.analytics-split,
-  .page-view .split.notif-split,
-  .page-view .split.profile-split,
-  .page-view .split.profile-split.profile-admin,
-  .page-view .split.admin-split {
-    align-items: stretch;
-  }
-  .split-right > .card:first-child,
-  .split-right > .page-card:first-child {
-    flex: 1;
-  }
-}
-
-@media (max-width: 1024px) {
-  .page-view {
-    padding: 82px 16px 20px;
-  }
-  .view-heading {
-    margin: 0 2px 16px;
-    will-change: transform, opacity;
-  }
-  .view-heading h1 {
-    font-size: var(--fs-display-lg);
-  }
-  .split,
-  .split.home-split,
-  .split.booking-split,
-  .split.mine-split,
-  .split.wl-split,
-  .split.analytics-split,
-  .split.notif-split,
-  .split.profile-split,
-  .split.profile-split.profile-admin,
-  .split.admin-split {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .page-view .split.home-split,
-  .page-view .split.booking-split,
-  .page-view .split.mine-split,
-  .page-view .split.wl-split,
-  .page-view .split.analytics-split,
-  .page-view .split.notif-split,
-  .page-view .split.profile-split,
-  .page-view .split.profile-split.profile-admin,
-  .page-view .split.admin-split {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .split-left,
-  .split-right {
-    gap: 14px;
-  }
-  .split-left {
-    order: 0;
-  }
-  .split-right {
-    order: 1;
-  }
-}
-
-@media (max-width: 720px) {
-  .page-view {
-    /* 底部留白避开右下角 AI 助手悬浮球 */
-    padding: 78px 12px 88px;
-  }
-  .view-heading {
-    margin: 0 2px 14px;
-  }
-  .view-heading h1 {
-    font-size: var(--fs-display-lg);
-  }
-  .card,
-  .page-card {
-    padding: 16px;
-    border-radius: var(--r-lg);
-  }
-  .card-title-row {
-    align-items: flex-start;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .kpi {
-    padding: 11px 12px;
-  }
-  .kpi-num {
-    font-size: 20px;
-  }
-  .responsive-compact {
-    width: 100%;
-    max-width: 640px;
-  }
-}
-
-@media (max-width: 420px) {
-  .page-view {
-    padding-inline: 10px;
-  }
-  .view-heading h1 {
-    font-size: 22px;
-  }
-  .kpi-grid {
-    gap: 8px;
-  }
-  .card,
-  .page-card {
-    padding: 14px;
-  }
-}

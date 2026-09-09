@@ -1,4 +1,8 @@
 <script setup>
+import PageHelp from '../components/PageHelp.vue'
+import SAnimatedNumber from '../components/ui/SAnimatedNumber.vue'
+import { usePagination } from '../composables/usePagination'
+import SPagination from '../components/ui/SPagination.vue'
 import { ref, computed, onMounted } from 'vue'
 import { message, confirmDialog } from '../components/ui/feedback'
 import {
@@ -107,14 +111,21 @@ const statusNav = [
 ]
 
 onMounted(load)
+const { page, pages, pageItems } = usePagination(filtered, filterStatus)
 </script>
 
 <template>
-  <div class="page-view">
-    <header class="view-heading" data-page-title>
+  <div v-reveal class="page-view">
+    <header class="view-heading has-page-help"><div class="heading-copy" data-page-title>
       <h1>我的预约</h1>
       <p class="heading-sub">管理签到、临时离开与签退等预约全生命周期操作</p>
-    </header>
+    </div><PageHelp title="操作说明">
+        <ul class="tips">
+          <li>开始前 <b>15 分钟</b> 内可签到</li>
+          <li>临时离开时长超过 <b>20 分钟</b> 视为违约</li>
+          <li>按期签退 <b>+1 分</b>；未签到违约 <b>-8 分</b></li>
+        </ul>
+      </PageHelp></header>
     <!-- 我的预约：页面级双栏 = 左状态筛选 | 右列表 -->
     <div class="split mine-split">
     <div class="split-left">
@@ -124,10 +135,10 @@ onMounted(load)
           <SButton size="sm" variant="secondary" @click="load"><AppIcon name="refresh" :size="14" />刷新</SButton>
         </div>
         <div class="kpi-grid kpi-lg">
-          <div class="kpi"><div class="kpi-num">{{ statusBuckets.all }}</div><div class="kpi-label">累计预约</div></div>
-          <div class="kpi kpi-warn"><div class="kpi-num">{{ statusBuckets.pending }}</div><div class="kpi-label">今日待签到</div></div>
+          <div class="kpi"><div class="kpi-num"><SAnimatedNumber :value="statusBuckets.all" /></div><div class="kpi-label">累计预约</div></div>
+          <div class="kpi kpi-warn"><div class="kpi-num"><SAnimatedNumber :value="statusBuckets.pending" /></div><div class="kpi-label">今日待签到</div></div>
           <div class="kpi kpi-ok"><div class="kpi-num">{{ statusBuckets.checked_in + statusBuckets.temp_leave }}</div><div class="kpi-label">当前进行中</div></div>
-          <div class="kpi kpi-bad"><div class="kpi-num">{{ statusBuckets.violation }}</div><div class="kpi-label">违约记录</div></div>
+          <div class="kpi kpi-bad"><div class="kpi-num"><SAnimatedNumber :value="statusBuckets.violation" /></div><div class="kpi-label">违约记录</div></div>
         </div>
       </section>
 
@@ -135,7 +146,7 @@ onMounted(load)
         <div class="card-title-row">
           <h3>状态筛选</h3>
         </div>
-        <nav class="side-nav">
+        <nav v-active-track class="side-nav">
           <button
             v-for="s in statusNav"
             :key="s.key"
@@ -150,14 +161,7 @@ onMounted(load)
         </nav>
       </section>
 
-      <section class="card tips-card responsive-compact">
-        <h3>操作说明</h3>
-        <ul class="tips">
-          <li>开始前 <b>15 分钟</b> 内可签到</li>
-          <li>临时离开时长超过 <b>20 分钟</b> 视为违约</li>
-          <li>按期签退 <b>+1 分</b>；未签到违约 <b>-8 分</b></li>
-        </ul>
-      </section>
+      
     </div>
 
     <div class="split-right">
@@ -169,7 +173,7 @@ onMounted(load)
           </h3>
         </div>
 
-        <div class="table-wrap">
+        <div v-list-motion="pageItems.map(row => row.id + row.status).join()" class="table-wrap">
           <div class="table-scroll" v-loading="loading" tabindex="0" aria-label="预约记录表格，可左右滑动">
             <table class="table mine-table">
               <thead>
@@ -184,7 +188,7 @@ onMounted(load)
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in filtered" :key="row.id">
+                <tr v-for="row in pageItems" :key="row.id">
                   <td class="num">{{ row.res_date }}</td>
                   <td class="num">{{ row.start_time.slice(0, 5) }} - {{ row.end_time.slice(0, 5) }}</td>
                   <td>{{ row.room_name }}</td>
@@ -215,6 +219,7 @@ onMounted(load)
             <SEmpty v-if="!filtered.length && !loading" description="当前筛选条件下暂无预约记录" />
           </div>
         </div>
+        <SPagination v-model="page" :pages="pages" :total="filtered.length" />
       </section>
     </div>
     </div>
@@ -222,7 +227,7 @@ onMounted(load)
 </template>
 
 <style scoped>
-.mine-split { grid-template-columns: 300px 1fr; }
+
 
 .kpi-lg .kpi-num { font-size: 24px; }
 .mine-table { min-width: 776px; }

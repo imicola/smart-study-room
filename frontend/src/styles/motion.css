@@ -1,0 +1,40 @@
+/* Shared motion vocabulary; GSAP owns only explicitly coordinated surfaces. */
+.tracked-nav { position: relative; isolation: isolate; }
+.active-track { position: absolute; top: 0; left: 0; pointer-events: none; z-index: -1; background: var(--primary-weak); border-radius: var(--r-md); }
+.tracked-nav > button.active { background: transparent !important; box-shadow: none !important; }
+.tracked-nav > button { position: relative; }
+.seg .active-track { background: var(--surface); box-shadow: var(--shadow-1); }
+.s-btn, .shortcut, .room-link { transition: transform .16s var(--ease-out), background .18s var(--ease), border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.s-btn:active:not(:disabled), .shortcut:active, .room-link:active { transform: scale(.98); }
+.s-input, .s-select__trigger { transition: border-color .18s var(--ease), background .18s var(--ease), box-shadow .18s var(--ease); }
+.form-field:focus-within .form-label { color: var(--primary-active); }
+.form-label { transition: color .16s var(--ease); }
+.auth-form { animation: surface-reveal .22s var(--ease-out); }
+.chart-panel { animation: surface-reveal .24s var(--ease-out); }
+.msgbox__error, .message-error { animation: surface-reveal .18s var(--ease-out); }
+[aria-invalid='true'] { border-color: var(--red) !important; animation: field-emphasis .3s ease-out; }
+.toast--success .toast__icon { animation: success-emphasis .28s var(--ease-out); }
+.seat-selected .seat-no { animation: success-emphasis .26s var(--ease-out); }
+.selected-card:not(.selected-card--empty) .sel-icon { animation: success-emphasis .26s var(--ease-out); }
+.v-loading-mask { overflow: hidden; }
+.v-loading-mask::before { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 25%, var(--primary-faint) 48%, transparent 70%); transform: translateX(-100%); animation: loading-sweep 1.8s ease-in-out infinite; }
+@keyframes surface-reveal { from { opacity: .15; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@keyframes success-emphasis { 0% { opacity: .4; transform: scale(.85); } 65% { transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes field-emphasis { from { box-shadow: 0 0 0 3px var(--red-weak); } to { box-shadow: none; } }
+@keyframes loading-sweep { to { transform: translateX(100%); } }
+@media (hover: hover) and (pointer: fine) {
+  .s-btn:hover:not(:disabled), .page-view .shortcut:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .room-link:hover { transform: translateX(2px); color: var(--primary-active); }
+}
+@media (hover: none), (pointer: coarse) {
+  .page-view .shortcut:hover, .page-view .seat:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v-loading-mask::before { display: none; }
+  .s-btn:hover, .s-btn:active, .page-view .shortcut:hover, .page-view .shortcut:active, .room-link:hover, .room-link:active { transform: none !important; }
+  .s-dialog-enter-from .s-dialog__panel, .s-dialog-leave-to .s-dialog__panel, .s-msgbox-enter-from .msgbox__panel, .s-msgbox-leave-to .msgbox__panel { transform: none !important; }
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .page-view .shortcut:hover .shortcut-icon, .page-view .shortcut:hover .chev { transform: none; }
+}

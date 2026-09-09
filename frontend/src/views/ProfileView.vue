@@ -1,4 +1,6 @@
 <script setup>
+import { usePagination } from '../composables/usePagination'
+import SPagination from '../components/ui/SPagination.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { getCreditOverview } from '../api/credit'
@@ -26,10 +28,12 @@ onMounted(async () => {
   const resp = await getCreditOverview()
   overview.value = resp.data
 })
+const creditLogs = computed(() => overview.value?.logs || [])
+const { page, pages, pageItems } = usePagination(creditLogs, null)
 </script>
 
 <template>
-  <div class="page-view">
+  <div v-reveal class="page-view">
     <header class="view-heading" data-page-title>
       <h1>个人中心</h1>
       <p class="heading-sub">账户信息与信用分记录</p>
@@ -92,7 +96,7 @@ onMounted(async () => {
           <h3>信用分流水</h3>
           <span class="muted">最新 {{ overview?.logs?.length || 0 }} 条记录</span>
         </div>
-        <div class="table-wrap">
+        <div v-list-motion="pageItems.map(row => row.id + row.status).join()" class="table-wrap">
           <div class="table-scroll" tabindex="0" aria-label="信用分流水表格，可左右滑动">
             <table class="table credit-table">
               <thead>
@@ -104,7 +108,7 @@ onMounted(async () => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in overview?.logs || []" :key="row.id">
+                <tr v-for="row in pageItems" :key="row.id">
                   <td class="num">{{ new Date(row.created_at).toLocaleString('zh-CN', { hour12: false }) }}</td>
                   <td>
                     <span :class="row.delta > 0 ? 'up' : 'down'">
@@ -119,6 +123,7 @@ onMounted(async () => {
             <SEmpty v-if="!overview?.logs?.length" description="暂无信用记录" />
           </div>
         </div>
+        <SPagination v-model="page" :pages="pages" :total="creditLogs.length" />
       </section>
     </div>
     </div>
@@ -126,12 +131,9 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.profile-split { grid-template-columns: 320px 1fr; }
+
 .credit-table { min-width: 640px; }
-.profile-split.profile-admin {
-  grid-template-columns: minmax(320px, 520px);
-  justify-content: start;
-}
+
 
 .profile-card {
   text-align: center;

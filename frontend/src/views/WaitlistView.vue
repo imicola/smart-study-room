@@ -1,4 +1,8 @@
 <script setup>
+import PageHelp from '../components/PageHelp.vue'
+import SAnimatedNumber from '../components/ui/SAnimatedNumber.vue'
+import { usePagination } from '../composables/usePagination'
+import SPagination from '../components/ui/SPagination.vue'
 import { ref, computed, onMounted } from 'vue'
 import { message, confirmDialog } from '../components/ui/feedback'
 import { listMyWaitlist, cancelWaitlist } from '../api/waitlist'
@@ -65,14 +69,22 @@ const nav = [
 ]
 
 onMounted(load)
+const { page, pages, pageItems } = usePagination(filtered, filterStatus)
 </script>
 
 <template>
-  <div class="page-view">
-    <header class="view-heading" data-page-title>
+  <div v-reveal class="page-view">
+    <header class="view-heading has-page-help"><div class="heading-copy" data-page-title>
       <h1>我的候补</h1>
       <p class="heading-sub">满座时段自动排队，空位释放后按序递补</p>
-    </header>
+    </div><PageHelp title="候补机制">
+        <ul class="tips">
+          <li>提交候补时，系统会按<b>时间优先</b>记录位次</li>
+          <li>空位产生后，按位次自动递补并发送<b>站内消息</b>通知</li>
+          <li>若递补成功后 5 分钟内未确认，顺位自动取消</li>
+          <li>排队过程中可随时退出候补，无信用分影响</li>
+        </ul>
+      </PageHelp></header>
     <div class="split wl-split">
     <div class="split-left">
       <section class="card responsive-compact">
@@ -81,16 +93,16 @@ onMounted(load)
           <SButton size="sm" variant="secondary" @click="load"><AppIcon name="refresh" :size="14" />刷新</SButton>
         </div>
         <div class="kpi-grid">
-          <div class="kpi"><div class="kpi-num">{{ buckets.all }}</div><div class="kpi-label">历史候补</div></div>
-          <div class="kpi kpi-warn"><div class="kpi-num">{{ buckets.waiting }}</div><div class="kpi-label">正在排队</div></div>
-          <div class="kpi kpi-ok"><div class="kpi-num">{{ buckets.promoted }}</div><div class="kpi-label">成功递补</div></div>
-          <div class="kpi"><div class="kpi-num">{{ buckets.expired }}</div><div class="kpi-label">已过期</div></div>
+          <div class="kpi"><div class="kpi-num"><SAnimatedNumber :value="buckets.all" /></div><div class="kpi-label">历史候补</div></div>
+          <div class="kpi kpi-warn"><div class="kpi-num"><SAnimatedNumber :value="buckets.waiting" /></div><div class="kpi-label">正在排队</div></div>
+          <div class="kpi kpi-ok"><div class="kpi-num"><SAnimatedNumber :value="buckets.promoted" /></div><div class="kpi-label">成功递补</div></div>
+          <div class="kpi"><div class="kpi-num"><SAnimatedNumber :value="buckets.expired" /></div><div class="kpi-label">已过期</div></div>
         </div>
       </section>
 
       <section class="card responsive-compact">
         <div class="card-title-row"><h3>状态分类</h3></div>
-        <nav class="side-nav">
+        <nav v-active-track class="side-nav">
           <button
             v-for="n in nav"
             :key="n.key"
@@ -105,15 +117,7 @@ onMounted(load)
         </nav>
       </section>
 
-      <section class="card responsive-compact">
-        <h3>候补机制</h3>
-        <ul class="tips">
-          <li>提交候补时，系统会按<b>时间优先</b>记录位次</li>
-          <li>空位产生后，按位次自动递补并发送<b>站内消息</b>通知</li>
-          <li>若递补成功后 5 分钟内未确认，顺位自动取消</li>
-          <li>排队过程中可随时退出候补，无信用分影响</li>
-        </ul>
-      </section>
+      
     </div>
 
     <div class="split-right">
@@ -125,7 +129,7 @@ onMounted(load)
           满座时段提交候补后，系统会在空位释放时自动按排队顺序递补，并通过站内消息通知您。
         </SBanner>
 
-        <div class="table-wrap">
+        <div v-list-motion="pageItems.map(row => row.id + row.status).join()" class="table-wrap">
           <div class="table-scroll" v-loading="loading" tabindex="0" aria-label="候补记录表格，可左右滑动">
             <table class="table waitlist-table">
               <thead>
@@ -140,7 +144,7 @@ onMounted(load)
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in filtered" :key="row.id">
+                <tr v-for="row in pageItems" :key="row.id">
                   <td class="num">{{ row.res_date }}</td>
                   <td class="num">{{ row.start_time.slice(0, 5) }} - {{ row.end_time.slice(0, 5) }}</td>
                   <td class="ellip">{{ row.room_name }}</td>
@@ -166,6 +170,7 @@ onMounted(load)
             <SEmpty v-if="!filtered.length && !loading" description="当前分类下暂无候补记录" />
           </div>
         </div>
+        <SPagination v-model="page" :pages="pages" :total="filtered.length" />
       </section>
     </div>
     </div>
@@ -173,7 +178,7 @@ onMounted(load)
 </template>
 
 <style scoped>
-.wl-split { grid-template-columns: 300px 1fr; }
+
 .waitlist-table { min-width: 790px; }
 .position-num {
   color: var(--amber-strong);

@@ -1,0 +1,156 @@
+/* Study workspace. Layout rules live here, component details stay local. */
+.page-view .split { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.split-left { display: grid; grid-template-columns: minmax(0, 1fr); }
+.card { box-shadow: none; }
+.kpi { background: transparent; border: 0; border-radius: 0; border-left: 1px solid var(--border); }
+.kpi:first-child { border-left: 0; }
+.kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.kpi-num { font-weight: 550; font-size: 26px; letter-spacing: -.04em; }
+.side-nav { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+.side-nav-item { grid-template-columns: auto 1fr auto; padding: 9px 12px; }
+details.card { padding-block: 12px; background: transparent; }
+details summary { cursor: pointer; font-size: 14px; color: var(--text-3); font-weight: 550; }
+details[open] summary { margin-bottom: 14px; color: var(--text-1); }
+details[open] > :not(summary) { animation: detail-reveal .22s var(--ease-out); }
+.filter-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.home-split .split-left, .home-split .split-right { display: contents; }
+.home-split .overview-card { grid-area: overview; }
+.home-split .tips-card { grid-area: tips; }
+.home-split .intro-card { grid-area: intro; }
+.home-split .shortcuts-card { grid-area: shortcuts; }
+.home-split .rooms-card { grid-area: rooms; align-self: stretch; }
+.home-split .shortcut-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.page-view .home-split { grid-template-columns: minmax(0, 1.3fr) minmax(280px, 1fr); grid-template-areas: "overview overview" "shortcuts rooms" "tips rooms" "intro intro"; grid-template-rows: auto 1fr auto auto; }
+.page-view .shortcut { min-height: 120px; padding: 16px; background: var(--surface-2); border-color: var(--hairline); }
+
+.page-view .shortcut-title { font-size: 16px; }
+.room-list { display: grid; gap: 0; }
+.room-link { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 17px 0; border: 0; border-bottom: 1px solid var(--hairline); background: transparent; color: var(--text-1); }
+.room-link:last-child { border-bottom: 0; }
+.room-link small { display: block; margin-top: 5px; color: var(--text-3); }
+.room-link > span:last-child { color: var(--primary); font-size: 20px; }
+.booking-split .split-left { grid-template-columns: minmax(0, 1fr); }
+.booking-split .filter-group { grid-template-columns: 1fr 1fr 1.4fr; }
+.booking-split .split-left > .card:first-child .card-title-row { display: none; }
+.booking-split .selected-card { position: sticky; bottom: 16px; z-index: 12; box-shadow: var(--shadow-2); }
+.profile-split .split-left { grid-template-columns: .8fr 1fr 1.2fr; align-items: stretch; }
+.profile-split.profile-admin .split-left { grid-template-columns: 1fr 2fr; }
+.analytics-split .split-left { grid-template-columns: 1.2fr 1fr; align-items: start; }
+.analytics-split .split-left > details { grid-column: 1 / -1; }
+.analytics-split .chart { min-width: 0; }
+.analytics-split .chart-wide { min-width: 600px; }
+.chart-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.chart-tabs button { padding: 9px 16px; border: 1px solid var(--border); border-radius: var(--r-full); background: transparent; color: var(--text-2); }
+.chart-tabs button.active { background: var(--primary); color: var(--text-inverse); border-color: var(--primary); }
+.admin-split .split-left { grid-template-columns: 1fr 1.3fr 1fr; align-items: stretch; }
+.table th { position: static; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 16px; color: var(--text-3); font-size: 13px; }
+.pagination button { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text-1); padding: 7px 12px; }
+.pagination button:disabled { opacity: .4; cursor: default; }
+.page-view .msg-content { display: block; overflow: visible; overflow-wrap: anywhere; }
+.page-view .msg-title-text { white-space: normal; }
+.auth-shell .auth-hero { background: var(--surface-2); border-right: 1px solid var(--border); }
+.auth-shell .auth-hero::before, .auth-shell .auth-hero::after { display: none; }
+.auth-shell .hero-title { font-weight: 500; font-size: clamp(32px, 3.4vw, 54px); letter-spacing: -.045em; }
+.auth-shell .hero-features { margin-top: 26px; }
+.auth-shell .auth-panel { overflow: visible; background: var(--canvas); }
+.auth-shell { min-height: 100dvh; height: auto; }
+.auth-heading { margin-bottom: 24px; }
+.auth-heading p { color: var(--text-3); margin-top: 8px; font-size: 14px; }
+.study-art { position: relative; height: 120px; margin-bottom: 28px; width: 200px; }
+.study-art span { position: absolute; width: 96px; height: 112px; border: 1px solid var(--primary); border-radius: 48px 48px 8px 8px; background: var(--primary-weak); transform: rotate(-12deg); left: 15px; }
+.study-art span:nth-child(2) { left: 70px; transform: rotate(10deg); background: var(--surface); }
+.study-art span:nth-child(3) { width: 46px; height: 46px; left: 126px; top: 62px; border-radius: 50%; background: var(--primary); }
+@keyframes detail-reveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (max-width: 1200px) { .admin-split .split-left { grid-template-columns: 1fr 1fr; } .admin-split .split-left > :last-child { grid-column: 1 / -1; } }
+@media (max-width: 1024px) {
+  .page-view { padding: 82px 20px 80px; }
+  .page-view .home-split, .analytics-split .split-left { grid-template-columns: 1fr; }
+  .profile-split .split-left { grid-template-columns: 1fr 1fr; }
+  .profile-split .split-left > :last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .page-view { padding: 78px 12px 84px; }
+  .view-heading h1 { font-size: 24px; }
+  .card { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi-num { font-size: 23px; }
+  .filter-group, .booking-split .filter-group, .profile-split .split-left, .profile-split.profile-admin .split-left, .admin-split .split-left { grid-template-columns: minmax(0, 1fr); }
+  .booking-split .selected-card { position: static; }
+  .side-nav-item, .seg-btn, .pagination button, .chart-tabs button { min-height: 44px; box-sizing: border-box; }
+  .s-btn { min-height: 44px; }
+  .home-split .shortcut-grid { grid-template-columns: minmax(0, 1fr); }
+  .auth-shell .auth-hero { display: none; }
+}
+
+.route-surface { min-height: 100%; }
+.page-view .booking-split .filter-hint { margin: 0; }
+.page-view .sel-detail { animation: detail-reveal .2s var(--ease-out); }
+.page-view .admin-split .split-left { grid-template-columns: minmax(0, 1fr); }
+.admin-split .split-left > .card:first-child { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.admin-split .split-left > .card:first-child .card-title-row { margin: 0; }
+.admin-split .split-left > .card:last-child { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.admin-split .quick-actions { display: flex; gap: 8px; margin: 0; }
+.admin-split .quick-actions .s-btn { width: auto; }
+.admin-split .split-left > .card:last-child .tips { flex-basis: 100%; }
+@media (max-width: 720px) { .admin-split .split-left > .card:first-child { align-items: flex-start; flex-direction: column; } }
+
+/* Tablet and phone panels use the available content width; inline icons and
+   seat-map geometry keep their intrinsic dimensions. */
+@media (max-width: 1024px) {
+  .page-view, .page-view .split, .page-view .split-left, .page-view .split-right,
+  .page-view .card, .page-view .page-card, .page-view .responsive-compact,
+  .page-view .table-wrap, .page-view .tips-card {
+    width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box;
+  }
+  .page-view .split, .page-view .profile-split .split-left,
+  .page-view .profile-split.profile-admin .split-left,
+  .page-view .analytics-split .split-left, .page-view .admin-split .split-left,
+  .page-view .filter-group, .page-view .booking-split .filter-group,
+  .page-view .charts-row { grid-template-columns: minmax(0, 1fr); }
+  .page-view .home-split { grid-template-areas: none; grid-template-rows: none; }
+  .page-view .home-split .overview-card { order: 1; }
+  .page-view .home-split .shortcuts-card { order: 2; }
+  .page-view .home-split .rooms-card { order: 3; }
+  .page-view .home-split .tips-card { order: 4; }
+  .page-view .home-split .intro-card { order: 5; }
+  .page-view .home-split .shortcut-grid { width: 100%; grid-template-columns: minmax(0, 1fr); }
+  .page-view .home-split .shortcut { width: 100%; min-height: 74px; }
+  .page-view .home-split .overview-card { padding: 14px 10px; }
+  .page-view .home-split .kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+  .page-view .home-split .kpi { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px 3px; }
+  .page-view .home-split .kpi-num { justify-content: center; flex-wrap: wrap; font-size: clamp(17px, 3.4vw, 24px); letter-spacing: -.03em; gap: 0; }
+  .page-view .home-split .kpi-label { font-size: clamp(10px, 2.6vw, 12px); white-space: nowrap; margin-top: 0; }
+  .page-view .home-split .kpi-slash, .page-view .home-split .kpi-total { font-size: 11px; }
+  .page-view .home-split .kpi-time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.15;
+    font-size: clamp(12px, 2.7vw, 15px);
+    white-space: normal;
+    text-align: center;
+  }
+  .page-view .home-split .kpi-time .kpi-time-start,
+  .page-view .home-split .kpi-time .kpi-time-end {
+    display: block;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .page-view .home-split .kpi-time .kpi-tilde {
+    font-size: 11px;
+    margin: 0 1px 0 0;
+  }
+  .page-view .actions, .page-view .quick-actions { width: 100%; display: flex; flex-direction: column; }
+  .page-view .actions .s-btn, .page-view .quick-actions .s-btn { width: 100%; }
+  .page-view .side-nav, .page-view .chart-tabs { width: 100%; }
+  .page-view .side-nav-item, .page-view .chart-tabs button { flex: 1 1 auto; }
+  .auth-shell .auth-card { width: 100%; max-width: 100%; }
+}
+
+/* Header help reserves its own anchor; only the heading copy participates in
+   the mobile title transition, keeping the shared panel independently usable. */
+.view-heading.has-page-help { position: relative; min-height: 42px; padding-right: 54px; }
+.heading-copy { min-width: 0; }
+@media (max-width: 1024px) { .view-heading.has-page-help { padding-right: 0; } }

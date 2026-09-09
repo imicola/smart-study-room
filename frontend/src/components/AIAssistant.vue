@@ -35,33 +35,8 @@ function stopAmbientFlow() {
   ambientTweens.forEach(tween => tween.kill())
   ambientTweens = []
 }
-function driftAmbientBlob(blob, index) {
-  if (!blob?.isConnected || !ambientRef.value?.classList.contains('is-flowing')) return
-  const tween = gsap.to(blob, {
-    xPercent: gsap.utils.random(-30, 30),
-    yPercent: gsap.utils.random(-34, 34),
-    rotation: gsap.utils.random(-16, 16),
-    duration: gsap.utils.random(4, 6.2),
-    ease: 'sine.inOut',
-    overwrite: 'auto',
-    onComplete: () => driftAmbientBlob(blob, index)
-  })
-  ambientTweens[index] = tween
-}
-async function syncAmbientFlow() {
-  const flowing = open.value && !messages.value.length && !showHistory.value && !conversationId.value && !reducedMotion()
+function syncAmbientFlow() {
   stopAmbientFlow()
-  if (!flowing) return
-  await nextTick()
-  const blobs = ambientRef.value?.querySelectorAll('.ambient-blob') || []
-  blobs.forEach((blob, index) => {
-    gsap.set(blob, {
-      xPercent: gsap.utils.random(-14, 14),
-      yPercent: gsap.utils.random(-14, 14),
-      rotation: gsap.utils.random(-6, 6)
-    })
-    driftAmbientBlob(blob, index)
-  })
 }
 function visibleRecommendations(msg) {
   return (msg.recommendations || []).filter(rec => rec.booked || (!msg.historical && !rec.dismissed))
@@ -377,10 +352,10 @@ onUnmounted(() => { window.removeEventListener('keydown', onKeydown); controller
 .header-actions button,.quick-prompts button{border:1px solid var(--border);background:var(--surface);color:var(--text-3);border-radius:var(--r-md);padding:6px 10px;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .14s var(--ease)}
 .header-actions button:hover,.quick-prompts button:hover{background:var(--surface-hover);color:var(--text-1);border-color:var(--border-strong)}
 .header-actions button:last-child{font-size:18px;padding:1px 10px;line-height:1.4}
-.message-list{flex:1;overflow:auto;padding:18px;background:var(--surface-2);scrollbar-width:thin;scrollbar-color:#c3cbd9 transparent}
+.message-list{flex:1;overflow:auto;padding:18px;background:var(--surface-2);scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) transparent}
 .message-list::-webkit-scrollbar{width:6px}
 .message-list::-webkit-scrollbar-track{background:transparent}
-.message-list::-webkit-scrollbar-thumb{background-color:#c3cbd9;border-radius:999px}
+.message-list::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:999px}
 .welcome{text-align:center;color:var(--text-3);padding:64px 24px}
 .welcome-icon{display:block;font-size:26px;color:var(--primary)}
 .welcome b{display:block;color:var(--text-1);margin:10px 0 4px;font-size:15px}
@@ -395,7 +370,7 @@ onUnmounted(() => { window.removeEventListener('keydown', onKeydown); controller
 .typing i:nth-child(3){animation-delay:.3s}
 @keyframes pulse{50%{opacity:.25;transform:translateY(-2px)}}
 .recommendations{width:100%;display:grid;gap:10px;margin-top:8px}
-.seat-rec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px;box-shadow:var(--shadow-1);transition:all .18s var(--ease)}
+.seat-rec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px;box-shadow:var(--shadow-1);transition:background .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease)}
 .seat-rec.is-booked{border-color:#b5dfc9;background:var(--green-faint)}
 .seat-rec.is-disabled{opacity:.72}
 .rec-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
@@ -416,21 +391,21 @@ onUnmounted(() => { window.removeEventListener('keydown', onKeydown); controller
 .quick-prompts button{white-space:nowrap;padding:5px 11px;font-size:12px;border-radius:var(--r-full)}
 .input-row{display:flex;gap:8px;align-items:flex-end;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:6px 7px;transition:border-color .18s var(--ease),background-color .18s var(--ease),box-shadow .18s var(--ease)}
 .input-row:focus-within{border-color:var(--primary);background:var(--surface);box-shadow:var(--ring)}
-.input-row textarea{flex:1;resize:none;border:0;outline:0;margin:0;background:transparent;font-family:inherit;font-size:14px;line-height:20px;height:34px;min-height:34px;max-height:120px;box-sizing:border-box;padding:7px 8px;overflow-y:hidden;color:var(--text-1);scrollbar-width:thin;scrollbar-color:#c3cbd9 transparent}
+.input-row textarea{flex:1;resize:none;border:0;outline:0;margin:0;background:transparent;font-family:inherit;font-size:14px;line-height:20px;height:34px;min-height:34px;max-height:120px;box-sizing:border-box;padding:7px 8px;overflow-y:hidden;color:var(--text-1);scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) transparent}
 .input-row textarea::placeholder{color:var(--text-4)}
 .input-row textarea::-webkit-scrollbar{width:5px}
 .input-row textarea::-webkit-scrollbar-track{background:transparent}
-.input-row textarea::-webkit-scrollbar-thumb{background-color:#c3cbd9;border-radius:999px}
+.input-row textarea::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:999px}
 .send{width:34px;height:34px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:var(--r-md);background:var(--primary);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:background-color .18s var(--ease),opacity .18s var(--ease),transform .1s var(--ease)}
 .send:hover:not(:disabled){background:var(--primary-hover)}
 .send:active:not(:disabled){transform:scale(.96)}
 .send:disabled{opacity:.35;cursor:not-allowed}
 .send.stop{background:var(--text-3)}
 .send.stop:hover{background:var(--text-2)}
-.history-panel{flex:1;overflow:auto;padding:12px;scrollbar-width:thin;scrollbar-color:#c3cbd9 transparent}
+.history-panel{flex:1;overflow:auto;padding:12px;scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) transparent}
 .history-panel::-webkit-scrollbar{width:6px}
 .history-panel::-webkit-scrollbar-track{background:transparent}
-.history-panel::-webkit-scrollbar-thumb{background-color:#c3cbd9;border-radius:999px}
+.history-panel::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:999px}
 .history-item{display:grid;grid-template-columns:1fr auto;border-radius:var(--r-lg)}
 .history-item.active{background:var(--primary-faint)}
 .history-item>button:first-child{border:0;background:none;text-align:left;padding:11px;display:flex;flex-direction:column;gap:3px;min-width:0;cursor:pointer}
@@ -440,18 +415,18 @@ onUnmounted(() => { window.removeEventListener('keydown', onKeydown); controller
 .history-item .delete:hover{color:var(--red)}
 .empty{text-align:center;color:var(--text-4);padding:40px;font-size:13px}
 /* The same anchored surface changes from launcher to panel; its lower-right corner stays fixed. */
-.ai-shell{position:fixed;right:24px;bottom:24px;z-index:80;width:132px;height:50px;overflow:hidden;border-radius:25px;background:var(--primary);box-shadow:0 8px 28px #24489430;transition:width .55s cubic-bezier(.22,1,.36,1),height .55s cubic-bezier(.22,1,.36,1),border-radius .55s,background .35s,box-shadow .35s;isolation:isolate}
+.ai-shell{position:fixed;right:24px;bottom:24px;z-index:80;width:132px;height:50px;overflow:hidden;border-radius:25px;background:var(--primary);box-shadow:0 8px 28px #24489430;transition:width .26s var(--ease-out),height .26s var(--ease-out),border-radius .26s,background .22s,box-shadow .22s;isolation:isolate}
 .ai-shell.is-open{width:min(620px,calc(100vw - 48px));height:min(780px,calc(100dvh - 48px));border-radius:28px;background:var(--surface);box-shadow:0 24px 80px #15254330,0 0 0 1px var(--border)}
 .ai-fab{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;color:white;display:flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .fab-icon{font-size:23px;transition:transform .4s}.ai-fab:hover .fab-icon{transform:rotate(90deg)}
-.ai-sheet{position:absolute;right:0;bottom:0;width:min(620px,calc(100vw - 48px));height:min(780px,calc(100dvh - 48px));display:flex;flex-direction:column;background:linear-gradient(145deg,var(--surface) 0%,var(--surface-2) 52%,var(--primary-faint) 145%);opacity:0;visibility:hidden;transform:translate(18px,18px);transition:opacity .16s,transform .4s,visibility .16s}
-.is-open .ai-sheet{opacity:1;visibility:visible;transform:none;transition:opacity .3s .14s,transform .55s .08s,visibility 0s}
+.ai-sheet{position:absolute;right:0;bottom:0;width:min(620px,calc(100vw - 48px));height:min(780px,calc(100dvh - 48px));display:flex;flex-direction:column;background:linear-gradient(145deg,var(--surface) 0%,var(--surface-2) 52%,var(--primary-faint) 145%);opacity:0;visibility:hidden;transform:translate(8px,8px);transition:opacity .16s,transform .4s,visibility .16s}
+.is-open .ai-sheet{opacity:1;visibility:visible;transform:none;transition:opacity .22s .04s,transform .26s,visibility 0s}
 .ai-sheet{isolation:isolate;overflow:hidden}
 .ai-sheet>.ai-header,.ai-sheet>.message-list,.ai-sheet>.history-panel,.ai-sheet>.composer{position:relative;z-index:1}
 /* Pause at the current frame and fade into the static base when reading begins. */
 .ambient-gradient{position:absolute;inset:-25%;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .55s ease;contain:strict}
-.ambient-gradient.is-flowing{opacity:1}
-.ambient-blob{position:absolute;display:block;width:105%;height:82%;border-radius:50%;will-change:transform;transform:translateZ(0);background:radial-gradient(ellipse at center,color-mix(in srgb,var(--primary) 20%,transparent) 0%,color-mix(in srgb,var(--primary) 12%,transparent) 32%,color-mix(in srgb,var(--primary) 5%,transparent) 62%,transparent 88%)}
+.ambient-gradient.is-flowing{opacity:.25}
+.ambient-blob{position:absolute;display:block;width:105%;height:82%;border-radius:50%;transform:translateZ(0);background:radial-gradient(ellipse at center,color-mix(in srgb,var(--primary) 20%,transparent) 0%,color-mix(in srgb,var(--primary) 12%,transparent) 32%,color-mix(in srgb,var(--primary) 5%,transparent) 62%,transparent 88%)}
 .ambient-blob-a{left:-18%;top:-14%}
 .ambient-blob-b{right:-20%;top:24%;width:96%;height:88%;opacity:.72}
 .ambient-blob-c{left:2%;bottom:-18%;width:112%;height:78%;opacity:.5}
@@ -487,4 +462,18 @@ onUnmounted(() => { window.removeEventListener('keydown', onKeydown); controller
 @media(max-width:370px){.brand-spark{display:none}.header-actions button{padding:6px}}
 @media(prefers-reduced-motion:reduce){.ai-shell,.ai-sheet,.is-open .ai-sheet,.backdrop-enter-active,.backdrop-leave-active{transition:none}.ai-shell *{animation:none!important;transition:none!important}}
 @media(prefers-reduced-motion:reduce){.ambient-gradient,.send-pulse{display:none}}
+
+/* Desktop dock: the left icon stays visible while the label rests off-screen.
+   Hover/focus expands toward the page without moving away from the pointer. */
+@media (min-width: 1025px) {
+  .ai-shell { right: 0; transform: translateX(84px); transition: transform .28s var(--ease-out), width .26s var(--ease-out), height .26s var(--ease-out), border-radius .26s, background .22s, box-shadow .22s; }
+  .ai-shell:not(.is-open) { border-radius: 25px 0 0 25px; }
+  .ai-shell:not(.is-open):hover, .ai-shell:not(.is-open):focus-within { transform: translateX(0); }
+  .ai-shell.is-open { right: 24px; transform: none; }
+  .ai-fab { justify-content: flex-start; gap: 0; }
+  .ai-fab .fab-icon { width: 48px; flex: 0 0 48px; text-align: center; }
+  .ai-fab .fab-label { white-space: nowrap; opacity: 0; transition: opacity .18s; }
+  .ai-shell:hover .fab-label, .ai-shell:focus-within .fab-label { opacity: 1; }
+}
+@media (min-width: 1025px) and (prefers-reduced-motion: reduce) { .ai-shell { transition: none; } }
 </style>

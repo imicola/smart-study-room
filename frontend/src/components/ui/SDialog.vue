@@ -1,5 +1,6 @@
 <script setup>
-import { nextTick, ref, watch } from 'vue'
+import { ref } from 'vue'
+import { useDialogFocus } from '../../composables/useDialogFocus'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -12,6 +13,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'close'])
 
 const panelRef = ref(null)
+const { trap } = useDialogFocus(() => props.modelValue, panelRef)
 
 function close() {
   emit('update:modelValue', false)
@@ -23,26 +25,13 @@ function onBackdrop() {
 }
 
 function onKeydown(e) {
+  trap(e)
   if (e.key === 'Escape' && props.modelValue) {
     e.stopPropagation()
     close()
   }
 }
 
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value) {
-      document.body.style.overflow = 'hidden'
-      nextTick(() => {
-        const focusable = panelRef.value?.querySelector('input, textarea, select, button')
-        focusable?.focus({ preventScroll: true })
-      })
-    } else {
-      document.body.style.overflow = ''
-    }
-  }
-)
 </script>
 
 <template>
@@ -52,6 +41,7 @@ watch(
         <div class="s-dialog__backdrop" @pointerdown="onBackdrop" />
         <div
           ref="panelRef"
+          tabindex="-1"
           class="s-dialog__panel"
           :style="{ width, maxWidth: 'calc(100vw - 24px)' }"
           @keydown="onKeydown"
@@ -87,7 +77,7 @@ watch(
 .s-dialog__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(23, 32, 54, .5);
+  background: var(--backdrop);
   backdrop-filter: blur(3px);
 }
 

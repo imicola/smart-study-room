@@ -1,4 +1,6 @@
 <script setup>
+import StudyTips from '../components/StudyTips.vue'
+import SAnimatedNumber from '../components/ui/SAnimatedNumber.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
@@ -121,7 +123,7 @@ const cardToneClass = {
 </script>
 
 <template>
-  <div class="page-view">
+  <div v-reveal class="page-view">
     <header class="view-heading" data-page-title>
       <h1>{{ greeting }}，{{ who }}</h1>
       <p class="heading-sub">{{ todayText }} · {{ helloText }}</p>
@@ -137,22 +139,23 @@ const cardToneClass = {
         </div>
         <div class="kpi-grid">
           <div class="kpi">
-            <div class="kpi-num">{{ currentCredit }}</div>
+            <div class="kpi-num"><SAnimatedNumber :value="currentCredit" /></div>
             <div class="kpi-label">现有信用分</div>
           </div>
           <div class="kpi">
-            <div class="kpi-num">{{ roomCount }}</div>
+            <div class="kpi-num"><SAnimatedNumber :value="roomCount" /></div>
             <div class="kpi-label">自习室可用</div>
           </div>
           <div class="kpi kpi-ok">
             <div class="kpi-num">
-              {{ availableSeats }}<span class="kpi-slash">/</span><span class="kpi-total">{{ totalSeats }}</span>
+              <SAnimatedNumber :value="availableSeats" /><span class="kpi-slash">/</span><span class="kpi-total">{{ totalSeats }}</span>
             </div>
             <div class="kpi-label">可用座位</div>
           </div>
           <div class="kpi">
             <div class="kpi-num kpi-time">
-              {{ openHours.open }}<span class="kpi-tilde">~</span>{{ openHours.close }}
+              <span class="kpi-time-start">{{ openHours.open }}</span>
+              <span class="kpi-time-end"><span class="kpi-tilde">~</span>{{ openHours.close }}</span>
             </div>
             <div class="kpi-label">今日开放</div>
           </div>
@@ -166,12 +169,12 @@ const cardToneClass = {
         </div>
         <div class="kpi-grid">
           <div class="kpi">
-            <div class="kpi-num">{{ roomCount }}</div>
+            <div class="kpi-num"><SAnimatedNumber :value="roomCount" /></div>
             <div class="kpi-label">自习室</div>
           </div>
           <div class="kpi kpi-ok">
             <div class="kpi-num">
-              {{ availableSeats }}<span class="kpi-slash">/</span><span class="kpi-total">{{ totalSeats }}</span>
+              <SAnimatedNumber :value="availableSeats" /><span class="kpi-slash">/</span><span class="kpi-total">{{ totalSeats }}</span>
             </div>
             <div class="kpi-label">可用 / 总座位</div>
           </div>
@@ -181,28 +184,15 @@ const cardToneClass = {
           </div>
           <div class="kpi">
             <div class="kpi-num kpi-time">
-              {{ openHours.open }}<span class="kpi-tilde">~</span>{{ openHours.close }}
+              <span class="kpi-time-start">{{ openHours.open }}</span>
+              <span class="kpi-time-end"><span class="kpi-tilde">~</span>{{ openHours.close }}</span>
             </div>
             <div class="kpi-label">今日开放</div>
           </div>
         </div>
       </section>
 
-      <section class="card tips-card">
-        <h3>{{ auth.isStudent ? '使用小贴士' : '管理提示' }}</h3>
-        <ul v-if="auth.isStudent" class="tips tips-list">
-          <li>距开始不足 30 分钟取消预约将扣 <b>2 分</b>信用分</li>
-          <li>超时未签到会自动记为违约，扣 <b>8 分</b>，并释放座位</li>
-          <li>满座时段可加入 <b>候补</b>，空位释放时按序自动递补</li>
-          <li>信用分低于 60，<b>3 天内</b>无法发起新预约</li>
-        </ul>
-        <ul v-else class="tips tips-list">
-          <li>定期检查自习室开放时间与座位规模是否准确</li>
-          <li>维护中的座位不会开放给普通用户预约</li>
-          <li>可在用户管理中启用或禁用普通用户账号</li>
-          <li>通过热力图了解座位利用率和高峰时段</li>
-        </ul>
-      </section>
+
     </div>
 
     <!-- 右栏：功能入口卡 -->
@@ -229,6 +219,29 @@ const cardToneClass = {
               <div class="shortcut-desc">{{ s.desc }}</div>
             </div>
           </button>
+        </div>
+      </section>
+      <StudyTips :title="auth.isStudent ? '使用小贴士' : '管理提示'">
+        <ul v-if="auth.isStudent" class="tips tips-list">
+          <li>距开始不足 30 分钟取消预约将扣 <b>2 分</b>信用分</li>
+          <li>超时未签到会自动记为违约，扣 <b>8 分</b>，并释放座位</li>
+          <li>满座时段可加入 <b>候补</b>，空位释放时按序自动递补</li>
+          <li>信用分低于 60，<b>3 天内</b>无法发起新预约</li>
+        </ul>
+        <ul v-else class="tips tips-list">
+          <li>定期检查自习室开放时间与座位规模是否准确</li>
+          <li>维护中的座位不会开放给普通用户预约</li>
+          <li>可在用户管理中启用或禁用普通用户账号</li>
+          <li>通过热力图了解座位利用率和高峰时段</li>
+        </ul>
+            </StudyTips>
+      <section class="card rooms-card">
+        <div class="card-title-row"><h3>找到你的专注空间</h3><span class="muted">自习室</span></div>
+        <div class="room-list">
+          <button v-for="room in rooms" :key="room.id" class="room-link" @click="router.push(auth.isAdmin ? '/admin' : '/booking')">
+            <span><b>{{ room.name }}</b><small>{{ room.location }} · {{ room.open_time?.slice(0,5) }}–{{ room.close_time?.slice(0,5) }}</small></span><span aria-hidden="true">↗</span>
+          </button>
+          <p v-if="!rooms.length" class="muted">暂无自习室信息</p>
         </div>
       </section>
 
@@ -279,9 +292,7 @@ const cardToneClass = {
 </template>
 
 <style scoped>
-.home-split {
-  grid-template-columns: 320px 1fr;
-}
+
 
 .role-pill {
   font-size: 11px;
@@ -313,6 +324,13 @@ const cardToneClass = {
 }
 .kpi-time {
   font-size: 19px;
+  display: flex;
+  align-items: baseline;
+}
+.kpi-time-start,
+.kpi-time-end {
+  display: inline-flex;
+  align-items: baseline;
 }
 .kpi-tilde {
   font-size: 13px;
@@ -430,10 +448,10 @@ const cardToneClass = {
   background: var(--primary-faint);
 }
 
-.tone-primary .shortcut-icon { background: var(--primary-weak); color: var(--primary-active); }
-.tone-success .shortcut-icon { background: var(--green-weak); color: var(--green-strong); }
-.tone-warm    .shortcut-icon { background: var(--amber-weak); color: var(--amber-strong); }
-.tone-violet  .shortcut-icon { background: var(--violet-weak); color: var(--violet-strong); }
+
+
+
+
 
 /* 系统介绍 */
 .intro-grid {
@@ -474,8 +492,9 @@ const cardToneClass = {
   }
   .overview-card { order: 1; width: 100%; }
   .shortcuts-card { order: 2; width: 100%; }
-  .tips-card { order: 3; width: 100%; }
-  .intro-card { order: 4; width: 100%; }
+  .rooms-card { order: 3; width: 100%; }
+  .tips-card { order: 4; width: 100%; }
+  .intro-card { order: 5; width: 100%; }
 
   .shortcut-grid {
     grid-template-columns: 1fr;
@@ -520,6 +539,26 @@ const cardToneClass = {
     gap: 10px;
     width: 100%;
   }
+
+  .kpi-time {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1.15 !important;
+    font-size: clamp(12px, 2.7vw, 15px) !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+  .kpi-time .kpi-time-start,
+  .kpi-time .kpi-time-end {
+    display: block !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+  }
+  .kpi-time .kpi-tilde {
+    font-size: 0.85em !important;
+    margin: 0 1px 0 0 !important;
+  }
 }
 
 @media (max-width: 560px) {
@@ -538,24 +577,10 @@ const cardToneClass = {
   .shortcut-desc {
     font-size: 11.5px;
   }
-  /* 窄屏 KPI 退化为单列横排（数值右对齐），避免分数截断 */
-  .kpi-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .kpi {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-  }
-  .kpi-num {
-    font-size: 20px;
-  }
-  .kpi-label {
-    margin-top: 0;
-    font-size: var(--fs-body-sm);
-    color: var(--text-3);
-  }
+
 }
+.tone-primary .shortcut-icon { background: var(--primary-weak); color: var(--primary-active); }
+.tone-success .shortcut-icon { background: var(--green-weak); color: var(--green-strong); }
+.tone-warm    .shortcut-icon { background: var(--amber-weak); color: var(--amber-strong); }
+.tone-violet  .shortcut-icon { background: var(--violet-weak); color: var(--violet-strong); }
 </style>

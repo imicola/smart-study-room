@@ -8,3 +8,6 @@
 @import './tokens.css';
 @import './base.css';
 @import './components.css';
+
+@import './workspace.css';
+@import './motion.css';

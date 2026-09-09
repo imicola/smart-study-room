@@ -1,5 +1,6 @@
 <script setup>
 import { nextTick, ref, watch } from 'vue'
+import { useDialogFocus } from '../../composables/useDialogFocus'
 import SButton from './SButton.vue'
 import SInput from './SInput.vue'
 import {
@@ -7,6 +8,8 @@ import {
 } from './feedback'
 
 const inputRef = ref(null)
+const panelRef = ref(null)
+const { trap } = useDialogFocus(() => Boolean(feedbackState.box), panelRef)
 const promptValue = ref('')
 const promptError = ref('')
 
@@ -55,6 +58,7 @@ function onInputKeydown(e) {
 }
 
 function onBoxKeydown(e) {
+  trap(e)
   if (e.key === 'Escape') {
     e.stopPropagation()
     onCancel()
@@ -107,7 +111,7 @@ const boxIcons = {
         @keydown="onBoxKeydown"
       >
         <div class="msgbox__backdrop" @pointerdown="onCancel" />
-        <div class="msgbox__panel">
+        <div ref="panelRef" tabindex="-1" class="msgbox__panel">
           <div class="msgbox__head">
             <span class="msgbox__icon" :class="boxIcons[feedbackState.box.type]?.cls" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -121,6 +125,7 @@ const boxIcons = {
           <div v-if="feedbackState.box.mode === 'prompt'" ref="inputRef" class="msgbox__input">
             <SInput
               v-model="promptValue"
+              :aria-invalid="!!promptError"
               :placeholder="feedbackState.box.inputPlaceholder"
               @keydown="onInputKeydown"
               @input="promptError = ''"

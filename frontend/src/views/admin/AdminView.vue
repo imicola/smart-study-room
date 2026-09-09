@@ -1,4 +1,5 @@
 <script setup>
+import PageHelp from '../../components/PageHelp.vue'
 import { ref, onMounted, computed } from 'vue'
 import { message, confirmDialog, promptDialog } from '../../components/ui/feedback'
 import { getRooms, getSeatMap } from '../../api/room'
@@ -169,11 +170,15 @@ function creditColor(s) {
 </script>
 
 <template>
-  <div class="page-view">
-    <header class="view-heading" data-page-title>
+  <div v-reveal class="page-view">
+    <header class="view-heading has-page-help"><div class="heading-copy" data-page-title>
       <h1>管理端</h1>
       <p class="heading-sub">自习室、座位与用户的全局管理</p>
-    </header>
+    </div><PageHelp title="管理须知"><ul class="tips">
+          <li>批量生成座位会<b>追加</b>而非覆盖现有座位</li>
+          <li>维护中座位学生端不可预约，不计入统计</li>
+          <li>管理员账号<b>无法禁用</b>，防止误操作锁死</li>
+        </ul></PageHelp></header>
     <div class="split admin-split">
     <!-- 左栏：导航 + 统计 + 快速操作 -->
     <div class="split-left">
@@ -182,7 +187,7 @@ function creditColor(s) {
           <h3>管理面板</h3>
           <STag type="danger">管理员</STag>
         </div>
-        <nav class="side-nav">
+        <nav v-active-track class="side-nav">
           <button
             v-for="t in tabs"
             :key="t.key"
@@ -228,11 +233,7 @@ function creditColor(s) {
             <AppIcon name="refresh" :size="16" />刷新数据
           </SButton>
         </div>
-        <ul class="tips">
-          <li>批量生成座位会<b>追加</b>而非覆盖现有座位</li>
-          <li>维护中座位学生端不可预约，不计入统计</li>
-          <li>管理员账号<b>无法禁用</b>，防止误操作锁死</li>
-        </ul>
+        
       </section>
     </div>
 
@@ -445,7 +446,7 @@ function creditColor(s) {
 </template>
 
 <style scoped>
-.admin-split { grid-template-columns: 280px 1fr; }
+
 .rooms-table { min-width: 760px; }
 .users-table { min-width: 770px; }
 .seats-table { min-width: 620px; }

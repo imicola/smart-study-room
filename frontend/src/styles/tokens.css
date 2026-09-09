@@ -57,19 +57,19 @@
 
   /* ---------- 字号层级 ---------- */
   --fs-caption: 12px;
-  --fs-body-sm: 13px;
+  --fs-body-sm: 14px;
   --fs-body: 14px;
   --fs-title: 15px;
   --fs-title-lg: 17px;
-  --fs-display: 21px;
+  --fs-display: 28px;
   --fs-display-lg: 26px;
 
   /* ---------- 圆角 ---------- */
   --r-sm: 6px;
   --r-md: 8px;
   --r-lg: 10px;
-  --r-xl: 12px;
-  --r-2xl: 14px;
+  --r-xl: 18px;
+  --r-2xl: 22px;
   --r-full: 999px;
 
   /* ---------- 阴影（克制、分层） ---------- */
@@ -84,9 +84,9 @@
   /* ---------- 动效节奏 ---------- */
   --ease: cubic-bezier(.25, .46, .45, .94);
   --ease-out: cubic-bezier(.16, .84, .44, 1);
-  --dur-1: .12s;
-  --dur-2: .18s;
-  --dur-3: .24s;
+  --dur-1: .16s;
+  --dur-2: .22s;
+  --dur-3: .28s;
 
   /* ---------- 层级 ---------- */
   --z-nav: 30;

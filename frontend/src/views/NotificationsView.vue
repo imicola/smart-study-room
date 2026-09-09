@@ -1,4 +1,8 @@
 <script setup>
+import PageHelp from '../components/PageHelp.vue'
+import SAnimatedNumber from '../components/ui/SAnimatedNumber.vue'
+import { usePagination } from '../composables/usePagination'
+import SPagination from '../components/ui/SPagination.vue'
 import { ref, computed, onMounted } from 'vue'
 import { message } from '../components/ui/feedback'
 import { listNotifications, markRead, markAllRead } from '../api/notification'
@@ -83,14 +87,21 @@ function typeIcon(k) {
 }
 
 onMounted(load)
+const { page, pages, pageItems } = usePagination(filtered, filterType)
 </script>
 
 <template>
-  <div class="page-view">
-    <header class="view-heading" data-page-title>
+  <div v-reveal class="page-view">
+    <header class="view-heading has-page-help"><div class="heading-copy" data-page-title>
       <h1>消息中心</h1>
       <p class="heading-sub">预约结果、违约警告与候补递补通知</p>
-    </header>
+    </div><PageHelp title="使用提示">
+        <ul class="tips">
+          <li>点击消息条目将其标记为<b>已读</b></li>
+          <li>候补递补、违约警告等<b>关键事件</b>建议及时查看</li>
+          <li>每 60 秒自动刷新未读数量（顶部铃铛）</li>
+        </ul>
+      </PageHelp></header>
     <div class="split notif-split">
     <div class="split-left">
       <section class="card responsive-compact">
@@ -99,14 +110,14 @@ onMounted(load)
           <SButton size="sm" variant="secondary" :disabled="buckets.unread === 0" @click="onMarkAll">全部已读</SButton>
         </div>
         <div class="kpi-grid">
-          <div class="kpi"><div class="kpi-num">{{ buckets.all }}</div><div class="kpi-label">消息总数</div></div>
-          <div class="kpi" :class="buckets.unread > 0 ? 'kpi-bad' : ''"><div class="kpi-num">{{ buckets.unread }}</div><div class="kpi-label">未读</div></div>
+          <div class="kpi"><div class="kpi-num"><SAnimatedNumber :value="buckets.all" /></div><div class="kpi-label">消息总数</div></div>
+          <div class="kpi" :class="buckets.unread > 0 ? 'kpi-bad' : ''"><div class="kpi-num"><SAnimatedNumber :value="buckets.unread" /></div><div class="kpi-label">未读</div></div>
         </div>
       </section>
 
       <section class="card responsive-compact">
         <div class="card-title-row"><h3>消息分类</h3></div>
-        <nav class="side-nav">
+        <nav v-active-track class="side-nav">
           <button
             v-for="n in typeNav"
             :key="n.key"
@@ -123,14 +134,7 @@ onMounted(load)
         </nav>
       </section>
 
-      <section class="card responsive-compact">
-        <h3>使用提示</h3>
-        <ul class="tips">
-          <li>点击消息条目将其标记为<b>已读</b></li>
-          <li>候补递补、违约警告等<b>关键事件</b>建议及时查看</li>
-          <li>每 60 秒自动刷新未读数量（顶部铃铛）</li>
-        </ul>
-      </section>
+      
     </div>
 
     <div class="split-right">
@@ -139,10 +143,10 @@ onMounted(load)
           <h3>消息列表 <span class="muted">共 {{ filtered.length }} 条</span></h3>
         </div>
 
-        <div v-loading="loading" class="list">
+        <div v-list-motion="pageItems.map(row => row.id).join()" v-loading="loading" class="list">
           <SEmpty v-if="!filtered.length && !loading" icon="inbox" description="暂无消息" />
           <button
-            v-for="n in filtered"
+            v-for="n in pageItems"
             :key="n.id"
             class="msg-item"
             :class="{ unread: !n.is_read }"
@@ -164,6 +168,7 @@ onMounted(load)
             <span class="msg-time">{{ fmtTime(n.created_at) }}</span>
           </button>
         </div>
+        <SPagination v-model="page" :pages="pages" :total="filtered.length" />
       </section>
     </div>
     </div>
@@ -171,7 +176,7 @@ onMounted(load)
 </template>
 
 <style scoped>
-.notif-split { grid-template-columns: 280px 1fr; }
+
 
 .list {
   display: flex;
@@ -179,13 +184,7 @@ onMounted(load)
   gap: 4px;
 }
 /* PC 宽屏：消息列表在右栏卡内纵向滚动，右栏高度可控 */
-@media (min-width: 1025px) {
-  .list {
-    min-height: 0;
-    max-height: calc(100vh - 320px);
-    overflow-y: auto;
-  }
-}
+
 .msg-item {
   all: unset;
   display: grid;
@@ -209,7 +208,7 @@ onMounted(load)
 }
 .msg-item.unread {
   background: var(--primary-faint);
-  border-color: #e0e8fb;
+  border-color: var(--border-strong);
 }
 .msg-body { min-width: 0; }
 .msg-type {
