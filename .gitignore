@@ -35,3 +35,6 @@ tools/
 
 # Agent 协同与临时目录
 .agents/
+
+# Word 临时锁文件
+~$*
