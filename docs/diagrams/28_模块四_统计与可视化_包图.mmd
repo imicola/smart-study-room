@@ -1,0 +1,41 @@
+%% 图 3-17 模块四：统计与可视化模块 包图
+flowchart LR
+    subgraph M4["模块四：统计与可视化模块"]
+        subgraph UI["界面交互层"]
+            direction LR
+            U1["空间占用热力图<br/>（座位×小时矩阵）"]
+            U2["运营数据大屏<br/>（趋势/峰值/榜单）"]
+            U3["3D 座位漫游<br/>（视角切换）"]
+        end
+        subgraph SVC["业务逻辑层"]
+            direction LR
+            S1["统计服务<br/>StatsService"]
+            S2["热度分析<br/>与指标计算"]
+        end
+        subgraph DAO["数据访问层"]
+            direction LR
+            R1["统计聚合查询<br/>StatsRepository"]
+        end
+        subgraph SUP["支撑组件"]
+            direction LR
+            C1["统计旁路缓存<br/>（随机过期防雪崩）"]
+            C2["前端图表与<br/>3D 渲染组件"]
+        end
+    end
+
+    RES["模块二：房间座位<br/>与预约历史数据"]
+    DB[("数据库<br/>预约历史聚合视图")]
+
+    U1 --> S1
+    U2 --> S1
+    U3 --> RES
+    S1 --> S2
+    S1 --> R1
+    R1 --> DB
+    R1 --> RES
+    S1 --> C1
+    U1 --> C2
+    U2 --> C2
+
+    classDef ext fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 3
+    class RES,DB ext

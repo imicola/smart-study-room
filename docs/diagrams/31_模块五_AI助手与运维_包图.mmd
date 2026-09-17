@@ -1,0 +1,41 @@
+%% 图 3-20 模块五：AI 助手与运维模块 包图
+flowchart LR
+    subgraph M5["模块五：AI 助手与运维模块"]
+        subgraph UI["界面交互层"]
+            direction LR
+            U1["AI 悬浮球<br/>对话抽屉"]
+            U2["推荐卡片<br/>与二次确认弹窗"]
+        end
+        subgraph SVC["业务逻辑层"]
+            direction LR
+            S1["AI 服务<br/>AIService"]
+            S2["模型客户端<br/>AIClient"]
+            S3["限流中间件<br/>RateLimiter"]
+            S4["后台调度器<br/>Scheduler"]
+        end
+        subgraph DAO["数据访问层"]
+            direction LR
+            R1["AI 会话与消息<br/>数据访问"]
+            R2["各业务只读<br/>数据访问"]
+        end
+    end
+
+    LLM["大语言模型服务<br/>（流式接口）"]
+    RES["模块二：预约引擎<br/>（卡片确认后下单）"]
+    CORE["模块二/三：生命周期与候补<br/>（巡检触发）"]
+    ALLMOD["全部业务接口<br/>（限流防护）"]
+    DB[("数据库<br/>AI 会话/消息表")]
+
+    U1 --> S1
+    U2 --> RES
+    S1 --> R1
+    S1 --> R2
+    S1 --> S2
+    S2 --> LLM
+    R1 --> DB
+    R2 --> DB
+    S3 --> ALLMOD
+    S4 --> CORE
+
+    classDef ext fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 3
+    class LLM,RES,CORE,ALLMOD,DB ext

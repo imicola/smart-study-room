@@ -1,0 +1,93 @@
+%% 图 3-12 模块二：座位与预约模块 详细设计类图
+classDiagram
+    direction LR
+
+    class Room {
+        +int64 ID
+        +string Name
+        +Time OpenTime
+        +Time CloseTime
+        +int SeatRows
+        +int SeatCols
+    }
+
+    class Seat {
+        +int64 ID
+        +int64 RoomID
+        +string SeatNo
+        +string Zone
+        +bool HasPower
+        +bool NearWindow
+        +string Status
+    }
+
+    class Reservation {
+        +int64 ID
+        +int64 UserID
+        +int64 SeatID
+        +Date ResDate
+        +Time StartTime
+        +Time EndTime
+        +string Status
+        +string Source
+    }
+
+    class SeatService {
+        +CreateRoom(req)
+        +BatchGenSeats(roomID, rows, cols)
+        +GetSeatMap(roomID, date) SeatMap
+        +UpdateSeatStatus(id, status)
+    }
+
+    class ReservationService {
+        +CreateWithSource(uid, req, source) View
+        +Cancel(uid, id)
+        +ListMine(uid) View[]
+    }
+
+    class LifecycleService {
+        +Checkin(uid, id)
+        +Leave(uid, id)
+        +ReturnBack(uid, id)
+        +Checkout(uid, id)
+        +Tick() int
+        +SetHooks(hooks)
+    }
+
+    class LifecycleHooks {
+        <<interface>>
+        +OnViolation(res)
+        +OnComplete(res)
+    }
+
+    class AllocationService {
+        +AutoAllocate(uid, req) Response
+        -ScoreCandidates(cands, req) ScoredSeat[]
+    }
+
+    class ScoredSeat {
+        +Seat seat
+        +float Score
+        +[]string Reasons
+    }
+
+    class SeatMutex {
+        -redis Client
+        +Lock(seatID, date) bool
+        +Renew(token)
+        +Unlock(token)
+    }
+
+    Room "1" --> "*" Seat : 包含
+    Seat "1" --> "*" Reservation : 被预约
+    Reservation ..> LifecycleHooks : 触发回调
+    SeatService ..> Room : 管理
+    SeatService ..> Seat : 批量生成/维护
+    ReservationService ..> Reservation : 创建/取消
+    ReservationService ..> SeatMutex : 抢座互斥
+    LifecycleService ..> Reservation : 六态流转
+    AllocationService ..> SeatService : 候选座位查询
+    AllocationService ..> ReservationService : 自动下单(source=auto)
+    AllocationService ..> ScoredSeat : 偏好加权评分
+    CreditService ..|> LifecycleHooks : 模块三实现
+    NotificationService ..|> LifecycleHooks : 通知服务实现

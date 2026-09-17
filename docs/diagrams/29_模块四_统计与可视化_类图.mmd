@@ -1,0 +1,71 @@
+%% 图 3-18 模块四：统计与可视化模块 详细设计类图
+classDiagram
+    direction LR
+
+    class HeatmapResponse {
+        +string Room
+        +string[] Hours
+        +SeatCell[] Seats
+        +int[][] Cells
+        +int[] HourlyUsage
+    }
+
+    class TrendPoint {
+        +Date Date
+        +float Utilization
+        +int Count
+    }
+
+    class PeakPoint {
+        +int Hour
+        +int Count
+    }
+
+    class TopSeat {
+        +string SeatNo
+        +string RoomName
+        +int Count
+    }
+
+    class StatsOverview {
+        +int TotalSeats
+        +int ActiveToday
+        +int InUseNow
+        +float TodayUtilization
+        +TrendPoint[] Trend14
+        +PeakPoint[] Peak
+        +TopSeat[] TopSeats
+    }
+
+    class StatsService {
+        +Heatmap(roomID, date) HeatmapResponse
+        +Trend(range) TrendPoint[]
+        +Peak(date) PeakPoint[]
+        +TopSeats(date) TopSeat[]
+        +Overview() StatsOverview
+    }
+
+    class StatsRepository {
+        +QueryHeatmap(roomID, date) HeatmapResponse
+        +QueryTrend(days) TrendPoint[]
+        +QueryPeak(date) PeakPoint[]
+        +QueryTopSeats(date) TopSeat[]
+        -BuildHourSeries(openTime, closeTime)
+    }
+
+    class StatsCache {
+        -redis Client
+        +Get(key) object
+        +Set(key, val, ttlWithJitter)
+        +Invalidate(prefix)
+    }
+
+    StatsService ..> StatsRepository : 聚合查询
+    StatsService ..> StatsCache : 旁路缓存
+    StatsService ..> HeatmapResponse : 组装矩阵
+    StatsService ..> StatsOverview : 汇总指标
+    StatsOverview *-- TrendPoint : 两周趋势
+    StatsOverview *-- PeakPoint : 高峰时段
+    StatsOverview *-- TopSeat : 热门座位
+    HeatmapResponse *-- SeatCell : 座位行列
+    StatsRepository ..> StatsCache : 失效通知

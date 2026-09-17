@@ -1,0 +1,40 @@
+%% 图 3-14 模块三：信用与候补模块 包图
+flowchart LR
+    subgraph M3["模块三：信用与候补模块"]
+        subgraph UI["界面交互层"]
+            direction LR
+            U1["信用分仪表盘<br/>与流水展示"]
+            U2["候补排队<br/>位次预测页面"]
+            U3["消息通知中心<br/>（抽屉式）"]
+        end
+        subgraph SVC["业务逻辑层"]
+            direction LR
+            S1["信用服务<br/>CreditService"]
+            S2["候补服务<br/>WaitlistService"]
+            S3["通知服务<br/>NotificationService"]
+        end
+        subgraph DAO["数据访问层"]
+            direction LR
+            R1["信用流水/候补/通知<br/>数据访问"]
+        end
+    end
+
+    LIFE["模块二：生命周期服务<br/>（履约/违约事件钩子）"]
+    RESV["模块二：预约服务<br/>（递补自动下单）"]
+    USER["模块一：用户数据<br/>（信用分与禁约标记）"]
+    DB[("数据库<br/>信用流水/候补/通知表")]
+
+    U1 --> S1
+    U2 --> S2
+    U3 --> S3
+    S1 --> R1
+    S2 --> R1
+    S3 --> R1
+    R1 --> DB
+    LIFE --> S1
+    LIFE --> S3
+    S2 --> RESV
+    S1 --> USER
+
+    classDef ext fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 3
+    class LIFE,RESV,USER,DB ext

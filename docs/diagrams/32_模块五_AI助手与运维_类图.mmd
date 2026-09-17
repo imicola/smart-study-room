@@ -1,0 +1,81 @@
+%% 图 3-21 模块五：AI 助手与运维模块 详细设计类图
+classDiagram
+    direction LR
+
+    class AIConversation {
+        +int64 ID
+        +int64 UserID
+        +string Title
+        +Time CreatedAt
+        +Time UpdatedAt
+    }
+
+    class AIMessage {
+        +int64 ID
+        +int64 ConversationID
+        +string Role
+        +string Content
+        +json ToolCalls
+        +string Status
+        +AIRecommendation[] Recommendations
+    }
+
+    class AIRecommendation {
+        +int64 SeatID
+        +string SeatNo
+        +string RoomName
+        +Date Date
+        +Time StartTime
+        +Time EndTime
+        +string Reason
+        +bool Booked
+        +bool Disabled
+    }
+
+    class AIService {
+        +Chat(uid, convID, msg, onDelta, onCards)
+        +ListConversations(uid)
+        +CreateConversation(uid)
+        +DeleteConversation(uid, id)
+        -BuildSnapshot(uid)
+        -ValidateRecommendations(cards)
+    }
+
+    class ReadOnlyRepos {
+        <<utility>>
+        +Users()
+        +Rooms()
+        +Seats()
+        +Reservations()
+        +Waitlist()
+    }
+
+    class AIClient {
+        -string baseURL
+        -string model
+        +Stream(messages, onDelta)
+    }
+
+    class RateLimiter {
+        -redis Client
+        +ByIP(key, limit, window)
+        +ByUser(uid, limit, window)
+    }
+
+    class Scheduler {
+        -int interval
+        -redis Client
+        +Run()
+        -TryAcquireLeader() bool
+        -Tick()
+    }
+
+    AIService ..> AIClient : 单次模型调用
+    AIService ..> AIConversation : 会话管理
+    AIService ..> AIMessage : 消息持久化
+    AIMessage *-- AIRecommendation : 结构化推荐
+    AIService ..> ReadOnlyRepos : 并行组装业务快照
+    AIService ..> ReservationService : 卡片确认复用预约引擎
+    RateLimiter ..> AIClient : AI 对话接口限流
+    Scheduler ..> LifecycleService : 超时违约巡检
+    Scheduler ..> WaitlistService : 候补递补触发

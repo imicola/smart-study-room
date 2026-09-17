@@ -1,0 +1,72 @@
+%% 图 3-9 模块一：用户与权限模块 详细设计类图
+classDiagram
+    direction LR
+
+    class User {
+        +int64 ID
+        +string Username
+        -string PasswordHash
+        +string RealName
+        +string StudentNo
+        +string Role
+        +int CreditScore
+        +string Status
+        +ToPublic() UserPublic
+    }
+
+    class UserPublic {
+        +int64 ID
+        +string Username
+        +string RealName
+        +string Role
+    }
+
+    class Claims {
+        +int64 UID
+        +string Username
+        +string Role
+        +Time ExpiresAt
+    }
+
+    class AuthService {
+        +Register(req) UserPublic
+        +Login(req) LoginResponse
+        +Logout(token)
+        +ParseToken(token) Claims
+        -IsTokenBlacklisted(hash) bool
+    }
+
+    class AuthMiddleware {
+        +RequireLogin() Middleware
+        +RequireAdmin() Middleware
+        +RequireStudent() Middleware
+        -CheckBlacklist(token) bool
+    }
+
+    class AdminUserService {
+        +ListUsers() UserPublic[]
+        +SetUserStatus(id, status)
+    }
+
+    class UserRepository {
+        +ExistsByUsername(name) bool
+        +GetByUsername(name) User
+        +GetByID(id) User
+        +Insert(u) User
+        +UpdateStatus(id, status)
+    }
+
+    class TokenBlacklist {
+        -redis Client
+        +Add(tokenHash, ttl)
+        +Has(tokenHash) bool
+    }
+
+    AuthService ..> UserRepository : 读写用户
+    AuthService ..> Claims : 签发/解析令牌
+    AuthService ..> TokenBlacklist : 注销写入
+    AuthMiddleware ..> AuthService : 校验令牌与角色
+    AuthMiddleware ..> TokenBlacklist : 拦截失效令牌
+    AdminUserService ..> UserRepository : 用户管理
+    User ..> UserPublic : 输出公开信息
+    Claims "1" --* "1" LoginResponse : 携带

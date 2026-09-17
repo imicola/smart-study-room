@@ -1,0 +1,37 @@
+%% 图 3-8 模块一：用户与权限模块 包图
+flowchart LR
+    subgraph M1["模块一：用户与权限模块"]
+        subgraph UI["界面交互层"]
+            direction LR
+            U1["登录与注册页面"]
+            U2["个人中心页面"]
+            U3["用户管理页面<br/>（管理端）"]
+        end
+        subgraph SVC["业务逻辑层"]
+            direction LR
+            A1["认证服务<br/>AuthService"]
+            A2["权限校验中间件<br/>AuthMiddleware"]
+            A3["用户管理服务<br/>AdminUserService"]
+        end
+        subgraph DAO["数据访问层"]
+            direction LR
+            R1["用户数据访问<br/>UserRepository"]
+        end
+    end
+
+    OTHER["其他业务模块<br/>（座位预约/信用候补/统计/AI）"]
+    REDIS[("缓存中间件<br/>令牌注销黑名单")]
+    DB[("数据库<br/>用户表")]
+
+    U1 --> A1
+    U2 --> A1
+    U3 --> A3
+    A1 --> R1
+    A3 --> R1
+    R1 --> DB
+    A1 --> REDIS
+    OTHER --> A2
+    A2 --> A1
+
+    classDef ext fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 3
+    class OTHER,REDIS,DB ext

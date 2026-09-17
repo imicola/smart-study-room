@@ -1,0 +1,83 @@
+%% 图 3-15 模块三：信用与候补模块 详细设计类图
+classDiagram
+    direction LR
+
+    class CreditLog {
+        +int64 ID
+        +int64 UserID
+        +int Delta
+        +string Reason
+        +int64 ReservationID
+        +Time CreatedAt
+    }
+
+    class CreditOverview {
+        +int Score
+        +Time BannedUntil
+        +CreditLog[] Logs
+    }
+
+    class WaitlistEntry {
+        +int64 ID
+        +int64 UserID
+        +int64 RoomID
+        +Date ResDate
+        +Time StartTime
+        +Time EndTime
+        +string Status
+    }
+
+    class WaitlistView {
+        +WaitlistEntry Entry
+        +string RoomName
+        +int Position
+    }
+
+    class Notification {
+        +int64 ID
+        +int64 UserID
+        +string Type
+        +string Title
+        +string Content
+        +bool IsRead
+    }
+
+    class CreditService {
+        +OnViolation(res)
+        +OnComplete(res)
+        +ApplyLateCancel(res)
+        +GetOverview(uid) CreditOverview
+        -ApplyDelta(uid, delta, reason)
+    }
+
+    class WaitlistService {
+        +Join(uid, req) View
+        +Cancel(uid, id)
+        +ListMine(uid) View[]
+        +PromoteTick() int
+        +ExpireTick() int
+    }
+
+    class NotificationService {
+        +Push(uid, type, title, content)
+        +List(uid) Notification[]
+        +UnreadCount(uid) int
+        +MarkRead(uid, id)
+        +MarkAllRead(uid)
+    }
+
+    class LifecycleHooks {
+        <<interface>>
+        +OnViolation(res)
+        +OnComplete(res)
+    }
+
+    CreditService ..|> LifecycleHooks : 违约扣分/履约加分
+    NotificationService ..|> LifecycleHooks : 事件推送
+    CreditService ..> CreditLog : 原子写流水
+    CreditService ..> CreditOverview : 汇总查询
+    WaitlistService ..> WaitlistEntry : 先到先得排队
+    WaitlistService ..> WaitlistView : 位次计算
+    WaitlistService ..> ReservationService : 递补下单(source=waitlist)
+    WaitlistService ..> NotificationService : 递补成功通知
+    NotificationService ..> Notification : 分发与已读管理

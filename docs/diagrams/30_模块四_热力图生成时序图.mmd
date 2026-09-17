@@ -1,0 +1,29 @@
+%% 图 3-19 模块四：空间占用热力图生成时序图
+sequenceDiagram
+    actor U as 管理员/学生
+    participant V as 前端(热力图页面)
+    participant H as StatsHandler
+    participant S as StatsService
+    participant C as StatsCache(旁路缓存)
+    participant R as StatsRepository
+    participant DB as PostgreSQL(预约历史)
+
+    U->>V: 选择房间与日期
+    V->>H: 查询空间占用热力图
+    H->>S: Heatmap(roomID, date)
+    S->>C: 读取缓存键(room:date)
+    alt 缓存命中
+        C-->>S: 返回缓存矩阵
+        S-->>H: HeatmapResponse
+    else 缓存未命中
+        S->>R: QueryHeatmap(roomID, date)
+        R->>DB: 按开闭馆时间生成小时序列
+        R->>DB: 逐座位判定各小时占用状态
+        DB-->>R: 座位×小时占用结果集
+        R-->>S: 组装二维占用矩阵
+        S->>C: 写回缓存(基础TTL±随机抖动)
+        S-->>H: HeatmapResponse
+    end
+    H-->>V: 返回矩阵与小时轴
+    V->>V: 渲染颜色梯度热力图
+    V-->>U: 展示空间占用分布与峰值洞察
